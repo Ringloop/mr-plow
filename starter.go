@@ -22,7 +22,10 @@ func main() {
 	if err != nil {
 		log.Fatal("Cannot parse config file", err)
 	}
+	ConnectAndStart(conf)
+}
 
+func ConnectAndStart(conf *config.ImportConfig) {
 	db, err := sql.Open("postgres", conf.SqlConfig)
 	if err != nil {
 		log.Fatal("Failed to open a DB connection: ", err)
