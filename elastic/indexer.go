@@ -77,6 +77,10 @@ func FindLastUpdateOrEpochDate(index string) (*time.Time, error) {
 }
 
 func FindLastUpdate(index string) (*time.Time, error) {
+	err := Refresh(index)
+	if err != nil {
+		return nil, err
+	}
 	var query = `
 	{
 		"sort": [
@@ -129,4 +133,12 @@ func FindLastUpdate(index string) (*time.Time, error) {
 
 	}
 
+}
+
+func Refresh(index string) error {
+	r := esapi.IndicesRefreshRequest{
+		Index: []string{index},
+	}
+	_, err := r.Do(context.Background(), es)
+	return err
 }
