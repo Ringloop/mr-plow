@@ -61,6 +61,21 @@ func GetBulkIndexer(index string) (esutil.BulkIndexer, error) {
 	return bi, nil
 }
 
+func FindLastUpdateOrEpochDate(index string) (*time.Time, error) {
+	lastDate, err := FindLastUpdate(index)
+	if err != nil {
+		return nil, err
+	}
+
+	if lastDate == nil {
+		var defaultDate time.Time
+		defaultDate, err = time.Parse(time.RFC3339, "1970-01-01T00:00:00+00:00")
+		lastDate = &defaultDate
+	}
+
+	return lastDate, err
+}
+
 func FindLastUpdate(index string) (*time.Time, error) {
 	var query = `
 	{
@@ -80,7 +95,6 @@ func FindLastUpdate(index string) (*time.Time, error) {
 
 	var mapResp map[string]interface{}
 
-	// Pass the JSON query to the Golang client's Search() method
 	res, err := es.Search(
 		es.Search.WithContext(context.Background()),
 		es.Search.WithIndex(index),
