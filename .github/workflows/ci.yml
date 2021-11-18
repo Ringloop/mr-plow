@@ -7,7 +7,6 @@ jobs:
     services:
       postgres:
         image: postgres:14.1
-        container_name: postgres
         env:
           POSTGRES_USER: user
           POSTGRES_PASSWORD: pwd
