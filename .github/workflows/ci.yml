@@ -4,6 +4,7 @@ on: push
 jobs:
   container-job:
     runs-on: ubuntu-latest
+    container_name: postgres
     services:
       postgres:
         image: postgres:14.1
