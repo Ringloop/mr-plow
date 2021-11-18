@@ -57,7 +57,7 @@ func (r *readerIntegrationTest) ReadConfig() ([]byte, error) {
 	testComplexConfig := `
 sql: "postgres://user:pwd@localhost:5432?sslmode=disable"
 queries:
-  - query: "select * from table1 where last_updated > $1"
+  - query: "select * from test.table1 where last_updated > $1"
     index: "out_index"
 `
 
