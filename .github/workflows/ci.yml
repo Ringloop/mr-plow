@@ -10,6 +10,10 @@ jobs:
         env:
           POSTGRES_USER: user
           POSTGRES_PASSWORD: pwd
+          POSTGRES_DB: postgres
+        ports:
+          - 5432:5432
+
         options: >-
           --health-cmd pg_isready
           --health-interval 10s
@@ -19,6 +23,19 @@ jobs:
     steps:
       - name: Check out repository code
         uses: actions/checkout@v2
+
+        #official elastic github action: https://github.com/elastic/elastic-github-actions/tree/master/elasticsearch
+      - name: Configure sysctl limits
+        run: |
+          sudo swapoff -a
+          sudo sysctl -w vm.swappiness=1
+          sudo sysctl -w fs.file-max=262144
+          sudo sysctl -w vm.max_map_count=262144
+
+      - name: Runs Elasticsearch
+        uses: elastic/elastic-github-actions/elasticsearch@master
+        with:
+          stack-version: 7.6.0
 
       - name: Set up Go
         uses: actions/setup-go@v2

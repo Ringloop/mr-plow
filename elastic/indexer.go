@@ -37,7 +37,7 @@ func Index(index string, document map[string]interface{}) error {
 
 	res, err := req.Do(context.Background(), es)
 	if err != nil {
-		log.Fatalf("Error getting response: %s", err)
+		return err
 	}
 	defer res.Body.Close()
 
@@ -51,9 +51,9 @@ func GetBulkIndexer(index string) (esutil.BulkIndexer, error) {
 	bi, err := esutil.NewBulkIndexer(esutil.BulkIndexerConfig{
 		Index:         index,
 		Client:        es,
-		NumWorkers:    10,        //todo config
-		FlushBytes:    100000,    //todo config
-		FlushInterval: time.Hour, // Disable automatic flushing
+		NumWorkers:    10,               //todo config
+		FlushBytes:    100000,           //todo config
+		FlushInterval: 30 * time.Second, // todoconfig
 	})
 	if err != nil {
 		return nil, fmt.Errorf("error getting bulkIndexer: %s", err)
@@ -61,7 +61,26 @@ func GetBulkIndexer(index string) (esutil.BulkIndexer, error) {
 	return bi, nil
 }
 
+func FindLastUpdateOrEpochDate(index string) (*time.Time, error) {
+	lastDate, err := FindLastUpdate(index)
+	if err != nil {
+		return nil, err
+	}
+
+	if lastDate == nil {
+		var defaultDate time.Time
+		defaultDate, err = time.Parse(time.RFC3339, "1970-01-01T00:00:00+00:00")
+		lastDate = &defaultDate
+	}
+
+	return lastDate, err
+}
+
 func FindLastUpdate(index string) (*time.Time, error) {
+	err := Refresh(index)
+	if err != nil {
+		return nil, err
+	}
 	var query = `
 	{
 		"sort": [
@@ -80,7 +99,6 @@ func FindLastUpdate(index string) (*time.Time, error) {
 
 	var mapResp map[string]interface{}
 
-	// Pass the JSON query to the Golang client's Search() method
 	res, err := es.Search(
 		es.Search.WithContext(context.Background()),
 		es.Search.WithIndex(index),
@@ -115,4 +133,17 @@ func FindLastUpdate(index string) (*time.Time, error) {
 
 	}
 
+}
+
+func Refresh(index string) error {
+	r := esapi.IndicesRefreshRequest{
+		Index: []string{index},
+	}
+	_, err := r.Do(context.Background(), es)
+	return err
+}
+
+func Delete(index string) error {
+	_, err := es.Indices.Delete([]string{index})
+	return err
 }
