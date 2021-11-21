@@ -37,7 +37,7 @@ func Index(index string, document map[string]interface{}) error {
 
 	res, err := req.Do(context.Background(), es)
 	if err != nil {
-		log.Fatalf("Error getting response: %s", err)
+		return err
 	}
 	defer res.Body.Close()
 
@@ -51,9 +51,9 @@ func GetBulkIndexer(index string) (esutil.BulkIndexer, error) {
 	bi, err := esutil.NewBulkIndexer(esutil.BulkIndexerConfig{
 		Index:         index,
 		Client:        es,
-		NumWorkers:    10,        //todo config
-		FlushBytes:    100000,    //todo config
-		FlushInterval: time.Hour, // Disable automatic flushing
+		NumWorkers:    10,               //todo config
+		FlushBytes:    100000,           //todo config
+		FlushInterval: 30 * time.Second, // todoconfig
 	})
 	if err != nil {
 		return nil, fmt.Errorf("error getting bulkIndexer: %s", err)
@@ -140,5 +140,10 @@ func Refresh(index string) error {
 		Index: []string{index},
 	}
 	_, err := r.Do(context.Background(), es)
+	return err
+}
+
+func Delete(index string) error {
+	_, err := es.Indices.Delete([]string{index})
 	return err
 }

@@ -16,6 +16,7 @@ func TestIntegration(t *testing.T) {
 	conf := initConfigIntegrationTest(t)
 	db := initSqlDB(t, conf)
 	defer db.Close()
+	elastic.Delete(conf.Queries[0].Index)
 
 	insertData(db, "mario@rossi.it", t)
 	originalLastDate, err := elastic.FindLastUpdateOrEpochDate(conf.Queries[0].Index)
@@ -41,11 +42,10 @@ func TestIntegration(t *testing.T) {
 	log.Println("original date", originalLastDate)
 	log.Println("date after import", lastImportedDate)
 
-	//TODO almost there, need to check data flushing delay on es
-	//if !lastImportedDate.After(*originalLastDate) {
-	//	t.Error("error date not incremented!")
-	//	t.FailNow()
-	//}
+	if !lastImportedDate.After(*originalLastDate) {
+		t.Error("error date not incremented!")
+		t.FailNow()
+	}
 
 }
 
@@ -57,7 +57,7 @@ func (r *readerIntegrationTest) ReadConfig() ([]byte, error) {
 	testComplexConfig := `
 sql: "postgres://user:pwd@localhost:5432/postgres?sslmode=disable"
 queries:
-  - query: "select * from test.table1 where last_updated > $1"
+  - query: "select * from test.table1 where last_update > $1"
     index: "out_index"
 `
 
@@ -91,7 +91,7 @@ func initSqlDB(t *testing.T, conf *config.ImportConfig) *sql.DB {
 	CREATE TABLE test.table1 (
 		user_id SERIAL PRIMARY KEY,
 		email VARCHAR ( 255 ) UNIQUE NOT NULL,
-		last_updated TIMESTAMP NOT NULL
+		last_update TIMESTAMP NOT NULL
 	)
 	
 	`)
@@ -106,7 +106,7 @@ func initSqlDB(t *testing.T, conf *config.ImportConfig) *sql.DB {
 
 func insertData(db *sql.DB, value string, t *testing.T) {
 	_, err := db.Exec(`
-		INSERT INTO test.table1 (email,last_updated) 
+		INSERT INTO test.table1 (email,last_update) 
 		VALUES('mario@rossi.it', now())
 	`)
 	if err != nil {
