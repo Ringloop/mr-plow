@@ -13,7 +13,7 @@ import (
 	_ "github.com/lib/pq"
 )
 
-func MoveData(db *sql.DB, query string, index string) error {
+func MoveData(db *sql.DB, query, index string) error {
 	lastDate, err := elastic.FindLastUpdateOrEpochDate(index)
 	if err != nil {
 		return nil
