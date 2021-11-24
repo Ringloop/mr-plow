@@ -17,20 +17,10 @@ type QueryModel struct {
 }
 
 type ImportConfig struct {
-	Database string `yaml:"database"`
-	Index    string `yaml:"index"`
-	Query    string `yaml:"query"`
-	Queries  []struct {
-		Index      string `yaml:"index"`
-		Query      string `yaml:"query"`
-		JSONFields []struct {
-			FieldName  string `yaml:"fieldName"`
-			Attributes struct {
-				AttributeName string `yaml:"attributeName"`
-				AttributeType string `yaml:"attributeType"`
-			} `yaml:"attributes"`
-		} `yaml:"JSONFields"`
-	} `yaml:"queries"`
+	Database string       `yaml:"database"`
+	Index    string       `yaml:"index"`
+	Query    string       `yaml:"query"`
+	Queries  []QueryModel `yaml:"queries"`
 }
 
 func ParseConfiguration(reader IReader) (*ImportConfig, error) {
