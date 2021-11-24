@@ -13,7 +13,7 @@ type readerTest struct {
 }
 
 // 'readerTest' implementing the Interface
-func (r *readerTest) ReadConfig() ([]byte, error) {
+func (*readerTest) ReadConfig() ([]byte, error) {
 
 	testSimpleConfig := `
 database: "databaseValue"

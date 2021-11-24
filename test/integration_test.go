@@ -52,7 +52,7 @@ func TestIntegration(t *testing.T) {
 type readerIntegrationTest struct{}
 
 // 'readerTest' implementing the Interface
-func (r *readerIntegrationTest) ReadConfig() ([]byte, error) {
+func (*readerIntegrationTest) ReadConfig() ([]byte, error) {
 
 	testComplexConfig := `
 database: "postgres://user:pwd@localhost:5432/postgres?sslmode=disable"
