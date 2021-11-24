@@ -16,7 +16,7 @@ type readerTest struct {
 func (r *readerTest) ReadConfig() ([]byte, error) {
 
 	testSimpleConfig := `
-sql: "sqlValue"
+database: "databaseValue"
 query: "queryValue"
 index: "indexValue"
 `
@@ -34,6 +34,6 @@ func TestGetSimpleConfig(t *testing.T) {
 	test_util.AssertEqual(t, err, nil)
 	test_util.AssertEqual(t, configVal.Index, "indexValue")
 	test_util.AssertEqual(t, configVal.Query, "queryValue")
-	test_util.AssertEqual(t, configVal.SqlConfig, "sqlValue")
+	test_util.AssertEqual(t, configVal.Database, "databaseValue")
 
 }

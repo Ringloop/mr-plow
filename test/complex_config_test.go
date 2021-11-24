@@ -16,7 +16,7 @@ type readerComplexTest struct {
 func (r *readerComplexTest) ReadConfig() ([]byte, error) {
 
 	testComplexConfig := `
-sql: "sqlValue"
+database: "databaseValue"
 query: "queryValue"
 index: "indexValue"
 queries:
@@ -38,9 +38,9 @@ func TestGetComplexConfig(t *testing.T) {
 	}
 
 	test_util.AssertEqual(t, err, nil)
+	test_util.AssertEqual(t, configVal.Database, "databaseValue")
 	test_util.AssertEqual(t, configVal.Index, "indexValue")
 	test_util.AssertEqual(t, configVal.Query, "queryValue")
-	test_util.AssertEqual(t, configVal.SqlConfig, "sqlValue")
 	test_util.AssertEqual(t, configVal.Queries[0].Query, "query_0_Value")
 	test_util.AssertEqual(t, configVal.Queries[0].Index, "index_0_Value")
 	test_util.AssertEqual(t, configVal.Queries[1].Query, "query_1_Value")

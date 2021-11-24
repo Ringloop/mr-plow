@@ -76,7 +76,7 @@ func initConfigIntegrationTest(t *testing.T) *config.ImportConfig {
 }
 
 func initSqlDB(t *testing.T, conf *config.ImportConfig) *sql.DB {
-	db, err := sql.Open("postgres", conf.SqlConfig)
+	db, err := sql.Open("postgres", conf.Database)
 	if err != nil {
 		t.Error("error connecting to sql db", err)
 		t.FailNow()

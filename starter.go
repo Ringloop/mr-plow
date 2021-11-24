@@ -20,7 +20,7 @@ func main() {
 }
 
 func ConnectAndStart(conf *config.ImportConfig) {
-	db, err := sql.Open("postgres", conf.SqlConfig)
+	db, err := sql.Open("postgres", conf.Database)
 	if err != nil {
 		log.Fatal("Failed to open a DB connection: ", err)
 	}
