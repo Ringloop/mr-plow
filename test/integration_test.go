@@ -26,7 +26,7 @@ func TestIntegration(t *testing.T) {
 	}
 
 	//when (moving data to elastic)
-	err = movedata.MoveData(db, conf.Queries[0].Query, conf.Queries[0].Index)
+	err = movedata.MoveData(db, conf.Queries[0])
 	if err != nil {
 		t.Error("error data moving", err)
 		t.FailNow()
