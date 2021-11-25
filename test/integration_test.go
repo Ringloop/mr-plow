@@ -104,7 +104,7 @@ func initSqlDB(t *testing.T, conf *config.ImportConfig) *sql.DB {
 	return db
 }
 
-func insertData(db *sql.DB, value string, t *testing.T) {
+func insertData(db *sql.DB, _ string, t *testing.T) {
 	_, err := db.Exec(`
 		INSERT INTO test.table1 (email,last_update) 
 		VALUES('mario@rossi.it', now())
