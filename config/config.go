@@ -5,18 +5,20 @@ import (
 )
 
 type QueryModel struct {
-	Query string `yaml:"query"`
-	Index string `yaml:"index"`
+	Index      string `yaml:"index"`
+	Query      string `yaml:"query"`
+	JSONFields []struct {
+		FieldName  string `yaml:"fieldName"`
+		Attributes struct {
+			AttributeName string `yaml:"attributeName"`
+			AttributeType string `yaml:"attributeType"`
+		} `yaml:"attributes"`
+	} `yaml:"JSONFields"`
 }
 
 type ImportConfig struct {
-	SqlConfig string `yaml:"sql"`
-	Query     string `yaml:"query"`
-	Index     string `yaml:"index"`
-	Queries   []struct {
-		Query string `yaml:"query"`
-		Index string `yaml:"index"`
-	}
+	Database string       `yaml:"database"`
+	Queries  []QueryModel `yaml:"queries"`
 }
 
 func ParseConfiguration(reader IReader) (*ImportConfig, error) {
@@ -27,6 +29,7 @@ func ParseConfiguration(reader IReader) (*ImportConfig, error) {
 	}
 
 	importConfiguration := &ImportConfig{}
+	//importConfiguration := make(map[interface{}]interface{})
 	err = yaml.Unmarshal(yamlFile, importConfiguration)
 	if err != nil {
 		return &ImportConfig{}, err

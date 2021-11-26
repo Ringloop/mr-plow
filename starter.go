@@ -20,7 +20,7 @@ func main() {
 }
 
 func ConnectAndStart(conf *config.ImportConfig) {
-	db, err := sql.Open("postgres", conf.SqlConfig)
+	db, err := sql.Open("postgres", conf.Database)
 	if err != nil {
 		log.Fatal("Failed to open a DB connection: ", err)
 	}
@@ -30,7 +30,7 @@ func ConnectAndStart(conf *config.ImportConfig) {
 
 	for _, c := range conf.Queries {
 		go func(c config.QueryModel) {
-			moveErr := movedata.MoveData(db, c.Query, c.Index)
+			moveErr := movedata.MoveData(db, c)
 			if moveErr != nil {
 				log.Fatal("error execurting query", err)
 			}

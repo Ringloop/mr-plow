@@ -26,7 +26,7 @@ func TestIntegration(t *testing.T) {
 	}
 
 	//when (moving data to elastic)
-	err = movedata.MoveData(db, conf.Queries[0].Query, conf.Queries[0].Index)
+	err = movedata.MoveData(db, conf.Queries[0])
 	if err != nil {
 		t.Error("error data moving", err)
 		t.FailNow()
@@ -52,10 +52,10 @@ func TestIntegration(t *testing.T) {
 type readerIntegrationTest struct{}
 
 // 'readerTest' implementing the Interface
-func (r *readerIntegrationTest) ReadConfig() ([]byte, error) {
+func (*readerIntegrationTest) ReadConfig() ([]byte, error) {
 
 	testComplexConfig := `
-sql: "postgres://user:pwd@localhost:5432/postgres?sslmode=disable"
+database: "postgres://user:pwd@localhost:5432/postgres?sslmode=disable"
 queries:
   - query: "select * from test.table1 where last_update > $1"
     index: "out_index"
@@ -76,7 +76,7 @@ func initConfigIntegrationTest(t *testing.T) *config.ImportConfig {
 }
 
 func initSqlDB(t *testing.T, conf *config.ImportConfig) *sql.DB {
-	db, err := sql.Open("postgres", conf.SqlConfig)
+	db, err := sql.Open("postgres", conf.Database)
 	if err != nil {
 		t.Error("error connecting to sql db", err)
 		t.FailNow()
