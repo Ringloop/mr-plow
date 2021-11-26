@@ -8,17 +8,13 @@ import (
 	"dariobalinzo.com/elastic/v2/config"
 )
 
-type readerComplexTest struct {
-	fileName string
-}
+type readerComplexTest struct{}
 
 // 'readerTest' implementing the Interface
 func (*readerComplexTest) ReadConfig() ([]byte, error) {
 
 	testComplexConfig := `
 database: "databaseValue"
-query: "queryValue"
-index: "indexValue"
 queries:
   - query: "query_0_Value"
     index: "index_0_Value"
@@ -31,7 +27,7 @@ queries:
 }
 
 func TestGetComplexConfig(t *testing.T) {
-	testReader := readerComplexTest{fileName: "Sample File Name"}
+	testReader := readerComplexTest{}
 	configVal, err := config.ParseConfiguration(&testReader)
 	if err != nil {
 		t.Errorf("Parsing config, got error %s", err)
@@ -39,8 +35,6 @@ func TestGetComplexConfig(t *testing.T) {
 
 	test_util.AssertEqual(t, err, nil)
 	test_util.AssertEqual(t, configVal.Database, "databaseValue")
-	test_util.AssertEqual(t, configVal.Index, "indexValue")
-	test_util.AssertEqual(t, configVal.Query, "queryValue")
 	test_util.AssertEqual(t, configVal.Queries[0].Query, "query_0_Value")
 	test_util.AssertEqual(t, configVal.Queries[0].Index, "index_0_Value")
 	test_util.AssertEqual(t, configVal.Queries[1].Query, "query_1_Value")

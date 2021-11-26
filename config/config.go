@@ -18,8 +18,6 @@ type QueryModel struct {
 
 type ImportConfig struct {
 	Database string       `yaml:"database"`
-	Index    string       `yaml:"index"`
-	Query    string       `yaml:"query"`
 	Queries  []QueryModel `yaml:"queries"`
 }
 

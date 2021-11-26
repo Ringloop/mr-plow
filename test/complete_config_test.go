@@ -8,9 +8,7 @@ import (
 	"dariobalinzo.com/elastic/v2/config"
 )
 
-type readerCompleteTest struct {
-	fileName string
-}
+type readerCompleteTest struct{}
 
 // 'readerTest' implementing the Interface
 func (*readerCompleteTest) ReadConfig() ([]byte, error) {
@@ -43,7 +41,7 @@ queries:
 }
 
 func TestGetCompleteConfig(t *testing.T) {
-	testReader := readerCompleteTest{fileName: "Sample File Name"}
+	testReader := readerCompleteTest{}
 	configVal, err := config.ParseConfiguration(&testReader)
 	if err != nil {
 		t.Errorf("Parsing config, got error %s", err)
