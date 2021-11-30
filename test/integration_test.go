@@ -2,6 +2,7 @@ package test
 
 import (
 	"database/sql"
+	"fmt"
 	"log"
 	"testing"
 
@@ -41,6 +42,55 @@ func TestIntegration(t *testing.T) {
 
 	log.Println("original date", originalLastDate)
 	log.Println("date after import", lastImportedDate)
+
+	if !lastImportedDate.After(*originalLastDate) {
+		t.Error("error date not incremented!")
+		t.FailNow()
+	}
+
+}
+
+func TestIntegrationWithJSON(t *testing.T) {
+	//given (some data on sql db)
+	conf := initConfigIntegrationTest(t)
+	db := initSqlDB(t, conf)
+	defer db.Close()
+	elastic.Delete(conf.Queries[0].Index)
+
+	email := "mario@rossi.it"
+	json := `
+{
+	"str_col": "String Data",
+    "int_col": 4237,
+    "bool_col": true,
+    "json_col": {
+        "type": "type"
+    },
+    "float_col": 48.94065780742467
+}`
+	insertDataWithJSON(db, email, json, t)
+	originalLastDate, err := elastic.FindLastUpdateOrEpochDate(conf.Queries[0].Index)
+	if err != nil {
+		t.Error("error in getting last date", err)
+		t.FailNow()
+	}
+
+	//when (moving data to elastic)
+	err = movedata.MoveData(db, conf.Queries[0])
+	if err != nil {
+		t.Error("error data moving", err)
+		t.FailNow()
+	}
+
+	//then (last date on elastic should be updated)
+	lastImportedDate, err := elastic.FindLastUpdateOrEpochDate(conf.Queries[0].Index)
+	if err != nil {
+		t.Error("error in getting last date", err)
+		t.FailNow()
+	}
+
+	log.Println("JSON_TEST: original date", originalLastDate)
+	log.Println("JSON_TEST: date after import", lastImportedDate)
 
 	if !lastImportedDate.After(*originalLastDate) {
 		t.Error("error date not incremented!")
@@ -91,6 +141,7 @@ func initSqlDB(t *testing.T, conf *config.ImportConfig) *sql.DB {
 	CREATE TABLE test.table1 (
 		user_id SERIAL PRIMARY KEY,
 		email VARCHAR ( 255 ) UNIQUE NOT NULL,
+		additional_info JSON,
 		last_update TIMESTAMP NOT NULL
 	)
 	
@@ -104,11 +155,24 @@ func initSqlDB(t *testing.T, conf *config.ImportConfig) *sql.DB {
 	return db
 }
 
-func insertData(db *sql.DB, _ string, t *testing.T) {
-	_, err := db.Exec(`
-		INSERT INTO test.table1 (email,last_update) 
-		VALUES('mario@rossi.it', now())
-	`)
+func insertData(db *sql.DB, email string, t *testing.T) {
+	insert_statement := fmt.Sprintf(`
+INSERT INTO test.table1 (email,last_update) 
+VALUES('%s', now())
+`, email)
+	_, err := db.Exec(insert_statement)
+	if err != nil {
+		t.Error("Error insert temp table: ", err)
+		t.FailNow()
+	}
+}
+
+func insertDataWithJSON(db *sql.DB, email string, json string, t *testing.T) {
+	sql_statement := fmt.Sprintf(`
+	INSERT INTO test.table1 (email, additional_info, last_update)
+	VALUES ('%s', '%s', now());	
+	`, email, json)
+	_, err := db.Exec(sql_statement)
 	if err != nil {
 		t.Error("Error insert temp table: ", err)
 		t.FailNow()
