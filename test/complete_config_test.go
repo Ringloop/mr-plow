@@ -21,19 +21,21 @@ queries:
     JSONFields:
       - fieldName: dataField_1
         attributes:
-          attributeName: attribute_1_Name
-          attributeType: attribute_1_Type
+          - attributeName: attribute_1_Name
+            attributeType: attribute_1_Type
       - fieldName: dataField_2
         attributes:
-          attributeName: attribute_2_Name
-          attributeType: attribute_2_Type
+          - attributeName: attribute_2_Name
+            attributeType: attribute_2_Type
+          - attributeName: attribute_2_1_Name
+            attributeType: attribute_2_1_Type
   - index: index_2
     query: select * from table_2
     JSONFields:
       - fieldName: dataField_2
         attributes:
-          attributeName: attribute_1_Name_2
-          attributeType: attribute_1_Type_2
+          - attributeName: attribute_1_Name_2
+            attributeType: attribute_1_Type_2
 `
 
 	// Prepare data you want to return without reading from the file
@@ -59,12 +61,14 @@ func TestGetCompleteConfig(t *testing.T) {
 	test_util.AssertEqual(t, len(jsonFields1), 2)
 	test_util.AssertEqual(t, jsonFields1[0].FieldName, "dataField_1")
 	attribute1JsonFields1 := jsonFields1[0].Attributes
-	test_util.AssertEqual(t, attribute1JsonFields1.AttributeName, "attribute_1_Name")
-	test_util.AssertEqual(t, attribute1JsonFields1.AttributeType, "attribute_1_Type")
+	test_util.AssertEqual(t, attribute1JsonFields1[0].AttributeName, "attribute_1_Name")
+	test_util.AssertEqual(t, attribute1JsonFields1[0].AttributeType, "attribute_1_Type")
 	test_util.AssertEqual(t, jsonFields1[1].FieldName, "dataField_2")
 	attribute1JsonFields2 := jsonFields1[1].Attributes
-	test_util.AssertEqual(t, attribute1JsonFields2.AttributeName, "attribute_2_Name")
-	test_util.AssertEqual(t, attribute1JsonFields2.AttributeType, "attribute_2_Type")
+	test_util.AssertEqual(t, attribute1JsonFields2[0].AttributeName, "attribute_2_Name")
+	test_util.AssertEqual(t, attribute1JsonFields2[0].AttributeType, "attribute_2_Type")
+	test_util.AssertEqual(t, attribute1JsonFields2[1].AttributeName, "attribute_2_1_Name")
+	test_util.AssertEqual(t, attribute1JsonFields2[1].AttributeType, "attribute_2_1_Type")
 
 	//test queries[1]
 	test_util.AssertEqual(t, queries[1].Index, "index_2")
@@ -73,6 +77,6 @@ func TestGetCompleteConfig(t *testing.T) {
 	test_util.AssertEqual(t, len(jsonFields2), 1)
 	test_util.AssertEqual(t, jsonFields2[0].FieldName, "dataField_2")
 	attribute2JsonFields1 := jsonFields2[0].Attributes
-	test_util.AssertEqual(t, attribute2JsonFields1.AttributeName, "attribute_1_Name_2")
-	test_util.AssertEqual(t, attribute2JsonFields1.AttributeType, "attribute_1_Type_2")
+	test_util.AssertEqual(t, attribute2JsonFields1[0].AttributeName, "attribute_1_Name_2")
+	test_util.AssertEqual(t, attribute2JsonFields1[0].AttributeType, "attribute_1_Type_2")
 }

@@ -9,7 +9,7 @@ type QueryModel struct {
 	Query      string `yaml:"query"`
 	JSONFields []struct {
 		FieldName  string `yaml:"fieldName"`
-		Attributes struct {
+		Attributes []struct {
 			AttributeName string `yaml:"attributeName"`
 			AttributeType string `yaml:"attributeType"`
 		} `yaml:"attributes"`
