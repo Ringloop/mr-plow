@@ -96,19 +96,19 @@ func (*readerIntegrationTestWithJson) ReadConfig() ([]byte, error) {
 	configIntegrationWithJson := `
 database: "postgres://user:pwd@localhost:5432/postgres?sslmode=disable"
 queries:
-  - query: "select * from test.table1 where last_update > $1"
-    index: "out_index"
-	JSONFields:
-	- fieldName: additional_field
-	  attributes:
-		attributeName: str_col
-		attributeType: string
-		attributeName: int_col
-		attributeType: integer
-		attributeName: bool_col
-		attributeType: boolean
-		attributeName: float_col
-		attributeType: float
+  - index: "out_index"
+    query: "select * from test.table1 where last_update > $1"
+    JSONFields:
+      - fieldName: additional_info
+        attributes:
+          - attributeName: str_col
+            attributeType: string
+          - attributeName: int_col
+            attributeType: integer
+          - attributeName: bool_col
+            attributeType: boolean
+          - attributeName: float_col
+            attributeType: float
 `
 
 	// Prepare data you want to return without reading from the file
