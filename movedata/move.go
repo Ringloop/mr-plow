@@ -54,7 +54,11 @@ func MoveData(db *sql.DB, c config.QueryModel) error {
 		}
 
 		for _, jsonfield := range c.JSONFields {
+			//TODO: check if jsonField is a json itself
+
+			//TODO: Build the json structurex
 			var jsonData map[string]interface{}
+			//TODO: Throw an error if the fieldName cannot be found
 			byteData := document[jsonfield.FieldName].([]byte)
 			//TODO consider also the field types in parsing
 			json.Unmarshal(byteData, &jsonData)

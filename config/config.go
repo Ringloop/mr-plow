@@ -5,8 +5,12 @@ import (
 )
 
 type QueryModel struct {
-	Index      string `yaml:"index"`
-	Query      string `yaml:"query"`
+	Index  string `yaml:"index"`
+	Query  string `yaml:"query"`
+	Fields []struct {
+		Name string `yaml:"name"`
+		Type string `yaml:"type"`
+	} `yaml:"fields"`
 	JSONFields []struct {
 		FieldName  string `yaml:"fieldName"`
 		Attributes []struct {

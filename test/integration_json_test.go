@@ -97,7 +97,7 @@ func (*readerIntegrationTestWithJson) ReadConfig() ([]byte, error) {
 database: "postgres://user:pwd@localhost:5432/postgres?sslmode=disable"
 queries:
   - index: "out_index"
-    query: "select * from test.table1 where last_update > $1"
+    query: "select * from test.table1 where last_update > $1" 
     JSONFields:
       - fieldName: additional_info
         attributes:

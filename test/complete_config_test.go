@@ -18,6 +18,11 @@ database: databaseValue
 queries:
   - index: index_1
     query: select * from table_1
+    fields:
+      - name: name
+        type: String
+      - name: last_update
+        type: Date
     JSONFields:
       - fieldName: dataField_1
         attributes:
@@ -31,6 +36,7 @@ queries:
             attributeType: attribute_2_1_Type
   - index: index_2
     query: select * from table_2
+
     JSONFields:
       - fieldName: dataField_2
         attributes:
@@ -57,6 +63,11 @@ func TestGetCompleteConfig(t *testing.T) {
 	//test queries[0]
 	test_util.AssertEqual(t, queries[0].Index, "index_1")
 	test_util.AssertEqual(t, queries[0].Query, "select * from table_1")
+	queryFields := queries[0].Fields
+	test_util.AssertEqual(t, queryFields[0].Name, "name")
+	test_util.AssertEqual(t, queryFields[0].Type, "String")
+	test_util.AssertEqual(t, queryFields[1].Name, "last_update")
+	test_util.AssertEqual(t, queryFields[1].Type, "Date")
 	jsonFields1 := queries[0].JSONFields
 	test_util.AssertEqual(t, len(jsonFields1), 2)
 	test_util.AssertEqual(t, jsonFields1[0].FieldName, "dataField_1")
