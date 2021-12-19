@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
 	"log"
 	"strings"
 	"time"
@@ -133,6 +134,37 @@ func FindLastUpdate(index string) (*time.Time, error) {
 
 	}
 
+}
+
+func FindIndexContent(index string, sortingField string) (*io.ReadCloser, error) {
+	err := Refresh(index)
+	if err != nil {
+		return nil, err
+	}
+	var query = `
+	{
+		"sort": [
+		  {
+			"last_update": {
+			  "order": "desc"
+			}
+		  }
+		],
+		"size": 1000
+	}
+	`
+
+	res, err := es.Search(
+		es.Search.WithContext(context.Background()),
+		es.Search.WithIndex(index),
+		es.Search.WithBody(strings.NewReader(query)),
+	)
+
+	if err != nil {
+		return nil, err
+	} else {
+		return &res.Body, nil
+	}
 }
 
 func Refresh(index string) error {
