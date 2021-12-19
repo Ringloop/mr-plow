@@ -136,7 +136,7 @@ func FindLastUpdate(index string) (*time.Time, error) {
 
 }
 
-func FindIndexContent(index string, sortingField string) (*io.ReadCloser, error) {
+func FindIndexContent(index, sortingField string) (*io.ReadCloser, error) {
 	err := Refresh(index)
 	if err != nil {
 		return nil, err
@@ -145,7 +145,7 @@ func FindIndexContent(index string, sortingField string) (*io.ReadCloser, error)
 	{
 		"sort": [
 		  {
-			"last_update": {
+			"$order": {
 			  "order": "desc"
 			}
 		  }
@@ -153,6 +153,7 @@ func FindIndexContent(index string, sortingField string) (*io.ReadCloser, error)
 		"size": 1000
 	}
 	`
+	query = strings.Replace(query, "$order", sortingField, 1)
 
 	res, err := es.Search(
 		es.Search.WithContext(context.Background()),
