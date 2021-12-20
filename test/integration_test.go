@@ -2,12 +2,14 @@ package test
 
 import (
 	"database/sql"
+	"encoding/json"
 	"log"
 	"testing"
 
 	"dariobalinzo.com/elastic/v2/config"
 	"dariobalinzo.com/elastic/v2/elastic"
 	"dariobalinzo.com/elastic/v2/movedata"
+	"dariobalinzo.com/elastic/v2/test_util"
 	_ "github.com/lib/pq"
 )
 
@@ -47,6 +49,23 @@ func TestIntegration(t *testing.T) {
 		t.FailNow()
 	}
 
+	indexContent1, err := elastic.FindIndexContent("out_index", "last_update")
+	defer (*indexContent1).Close()
+	if err != nil {
+		t.Error(err)
+		t.FailNow()
+	}
+
+	var response1 ElasticTestResponse
+	if err := json.NewDecoder(*indexContent1).Decode(&response1); err != nil {
+		t.Error(err)
+		t.FailNow()
+	}
+
+	test_util.AssertEqual(t, response1.Hits.Hits[0].Source.Email, "mario@rossi.it")
+	test_util.AssertEqual(t, len(response1.Hits.Hits), 1)
+	test_util.AssertNotNull(t, response1.Hits.Hits[0].Source.LastUpdate)
+	test_util.AssertNotNull(t, response1.Hits.Hits[0].Source.UserID)
 }
 
 type readerIntegrationTest struct{}
