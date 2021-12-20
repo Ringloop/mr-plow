@@ -77,7 +77,7 @@ func validateQueriesConfig(importConfiguration *ImportConfig) error {
 	return nil
 }
 
-func validateJsonFields(jsonFields JSONFields, queryIndex int) error {
+func validateJsonFields(_ JSONFields, _ int) error {
 	//TODO
 	return nil
 }

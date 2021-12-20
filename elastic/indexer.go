@@ -170,7 +170,7 @@ func FindIndexContent(index, sortingField string) (*io.ReadCloser, error) {
 	}
 }
 
-func replaceOrderByField(query string, sortingField string) string {
+func replaceOrderByField(query, sortingField string) string {
 	query = strings.Replace(query, "$order", sortingField, 2)
 	return query
 }
