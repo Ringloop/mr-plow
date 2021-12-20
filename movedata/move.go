@@ -36,6 +36,12 @@ func MoveData(db *sql.DB, c config.QueryModel) error {
 	if err != nil {
 		return err
 	}
+
+	columnsMap := make(map[string]string)
+	for _, colConfig := range c.Fields {
+		columnsMap[colConfig.Name] = colConfig.Type
+	}
+
 	for rows.Next() {
 		columns := make([]interface{}, len(cols))
 		columnPointers := make([]interface{}, len(cols))

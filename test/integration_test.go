@@ -60,6 +60,13 @@ database: "postgres://user:pwd@localhost:5432/postgres?sslmode=disable"
 queries:
   - query: "select * from test.table1 where last_update > $1"
     index: "out_index"
+    fields:
+      - name: user_id
+        type: Integer
+      - name: email
+        type: String  
+      - name: last_update
+        type: Date
 `
 
 	// Prepare data you want to return without reading from the file
