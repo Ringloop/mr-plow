@@ -15,7 +15,7 @@ import (
 )
 
 func MoveData(db *sql.DB, c config.QueryModel) error {
-	lastDate, err := elastic.FindLastUpdateOrEpochDate(c.Index)
+	lastDate, err := elastic.FindLastUpdateOrEpochDate(c.Index, c.UpdateDate)
 	if err != nil {
 		return nil
 	}

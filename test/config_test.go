@@ -18,8 +18,10 @@ database: "databaseValue"
 queries:
   - query: "query_0_Value"
     index: "index_0_Value"
+    updateDate: "test0"
   - query: "query_1_Value"
     index: "index_1_Value"
+    updateDate: "test1"
 `
 
 	// Prepare data you want to return without reading from the file
@@ -37,6 +39,8 @@ func TestGetComplexConfig(t *testing.T) {
 	test_util.AssertEqual(t, configVal.Database, "databaseValue")
 	test_util.AssertEqual(t, configVal.Queries[0].Query, "query_0_Value")
 	test_util.AssertEqual(t, configVal.Queries[0].Index, "index_0_Value")
+	test_util.AssertEqual(t, configVal.Queries[0].UpdateDate, "test0")
 	test_util.AssertEqual(t, configVal.Queries[1].Query, "query_1_Value")
 	test_util.AssertEqual(t, configVal.Queries[1].Index, "index_1_Value")
+	test_util.AssertEqual(t, configVal.Queries[1].UpdateDate, "test1")
 }

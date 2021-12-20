@@ -18,6 +18,7 @@ database: databaseValue
 queries:
   - index: index_1
     query: select * from table_1
+    updateDate: test01
     JSONFields:
       - fieldName: dataField_1
         attributes:
@@ -29,6 +30,7 @@ queries:
           attributeType: attribute_2_Type
   - index: index_2
     query: select * from table_2
+    updateDate: test02
     JSONFields:
       - fieldName: dataField_2
         attributes:

@@ -21,7 +21,7 @@ func TestIntegration(t *testing.T) {
 	elastic.Delete(conf.Queries[0].Index)
 
 	insertData(db, "mario@rossi.it", t)
-	originalLastDate, err := elastic.FindLastUpdateOrEpochDate(conf.Queries[0].Index)
+	originalLastDate, err := elastic.FindLastUpdateOrEpochDate(conf.Queries[0].Index, conf.Queries[0].UpdateDate)
 	if err != nil {
 		t.Error("error in getting last date", err)
 		t.FailNow()
@@ -35,7 +35,7 @@ func TestIntegration(t *testing.T) {
 	}
 
 	//then (last date on elastic should be updated)
-	lastImportedDate, err := elastic.FindLastUpdateOrEpochDate(conf.Queries[0].Index)
+	lastImportedDate, err := elastic.FindLastUpdateOrEpochDate(conf.Queries[0].Index, conf.Queries[0].UpdateDate)
 	if err != nil {
 		t.Error("error in getting last date", err)
 		t.FailNow()
@@ -78,6 +78,7 @@ database: "postgres://user:pwd@localhost:5432/postgres?sslmode=disable"
 queries:
   - query: "select * from test.table1 where last_update > $1"
     index: "out_index"
+    updateDate: "last_update"
 `
 
 	// Prepare data you want to return without reading from the file
