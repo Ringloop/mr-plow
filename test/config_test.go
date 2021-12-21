@@ -22,6 +22,8 @@ queries:
   - query: "query_1_Value"
     index: "index_1_Value"
     updateDate: "test1"
+elastic:
+  url: http://localhost:9200
 `
 
 	// Prepare data you want to return without reading from the file

@@ -22,9 +22,17 @@ type QueryModel struct {
 	JSONFields JSONFields `yaml:"JSONFields"`
 }
 
+type ElasticConfig struct {
+	Url        string `yaml:"url"`
+	User       string `yaml:"user"`
+	Password   string `yaml:"password"`
+	CaCertPath string `yaml:"caCertPath"`
+}
+
 type ImportConfig struct {
-	Database string       `yaml:"database"`
-	Queries  []QueryModel `yaml:"queries"`
+	Database string        `yaml:"database"`
+	Queries  []QueryModel  `yaml:"queries"`
+	Elastic  ElasticConfig `yaml:"elastic"`
 }
 
 func ParseConfiguration(reader IReader) (*ImportConfig, error) {
@@ -49,6 +57,11 @@ func ParseConfiguration(reader IReader) (*ImportConfig, error) {
 	}
 
 	err = validateQueriesConfig(importConfiguration)
+
+	if importConfiguration.Elastic.Url == "" {
+		return nil, errors.New("missing elastic url (elastic.url)")
+	}
+
 	if err != nil {
 		return nil, err
 	} else {

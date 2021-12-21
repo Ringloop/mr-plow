@@ -14,21 +14,26 @@ import (
 	_ "github.com/lib/pq"
 )
 
-func MoveData(db *sql.DB, c config.QueryModel) error {
-	lastDate, err := elastic.FindLastUpdateOrEpochDate(c.Index, c.UpdateDate)
+func MoveData(db *sql.DB, globalConfig *config.ImportConfig, queryConf config.QueryModel) error {
+	repo, err := elastic.NewClient(globalConfig)
 	if err != nil {
-		return nil
+		return err
+	}
+
+	lastDate, err := repo.FindLastUpdateOrEpochDate(queryConf.Index, queryConf.UpdateDate)
+	if err != nil {
+		return err
 	}
 	log.Print("found last date ", lastDate)
 
-	elasticBulk, err := elastic.GetBulkIndexer(c.Index)
+	elasticBulk, err := repo.GetBulkIndexer(queryConf.Index)
 	if err != nil {
-		return nil
+		return err
 	}
 	defer elasticBulk.Close(context.Background())
 
-	log.Print("going to execute query ", c.Query)
-	rows, err := db.Query(c.Query, lastDate)
+	log.Print("going to execute query ", queryConf.Query)
+	rows, err := db.Query(queryConf.Query, lastDate)
 	if err != nil {
 		return err
 	}
@@ -53,11 +58,14 @@ func MoveData(db *sql.DB, c config.QueryModel) error {
 			document[colName] = *val
 		}
 
-		for _, jsonfield := range c.JSONFields {
+		for _, jsonfield := range queryConf.JSONFields {
 			var jsonData map[string]interface{}
 			byteData := document[jsonfield.FieldName].([]byte)
 			//TODO consider also the field types in parsing
-			json.Unmarshal(byteData, &jsonData)
+			err := json.Unmarshal(byteData, &jsonData)
+			if err != nil {
+				return err
+			}
 			document[jsonfield.FieldName] = jsonData
 		}
 

@@ -18,24 +18,29 @@ func TestIntegration(t *testing.T) {
 	conf := initConfigIntegrationTest(t)
 	db := initSqlDB(t, conf)
 	defer db.Close()
-	elastic.Delete(conf.Queries[0].Index)
+	repo, err := elastic.NewDefaultClient()
+	if err != nil {
+		t.Error("error in creating elastic connection", err)
+		t.FailNow()
+	}
+	repo.Delete(conf.Queries[0].Index)
 
 	insertData(db, "mario@rossi.it", t)
-	originalLastDate, err := elastic.FindLastUpdateOrEpochDate(conf.Queries[0].Index, conf.Queries[0].UpdateDate)
+	originalLastDate, err := repo.FindLastUpdateOrEpochDate(conf.Queries[0].Index, conf.Queries[0].UpdateDate)
 	if err != nil {
 		t.Error("error in getting last date", err)
 		t.FailNow()
 	}
 
 	//when (moving data to elastic)
-	err = movedata.MoveData(db, conf.Queries[0])
+	err = movedata.MoveData(db, conf, conf.Queries[0])
 	if err != nil {
 		t.Error("error data moving", err)
 		t.FailNow()
 	}
 
 	//then (last date on elastic should be updated)
-	lastImportedDate, err := elastic.FindLastUpdateOrEpochDate(conf.Queries[0].Index, conf.Queries[0].UpdateDate)
+	lastImportedDate, err := repo.FindLastUpdateOrEpochDate(conf.Queries[0].Index, conf.Queries[0].UpdateDate)
 	if err != nil {
 		t.Error("error in getting last date", err)
 		t.FailNow()
@@ -49,7 +54,7 @@ func TestIntegration(t *testing.T) {
 		t.FailNow()
 	}
 
-	indexContent1, err := elastic.FindIndexContent("out_index", "last_update")
+	indexContent1, err := repo.FindIndexContent("out_index", "last_update")
 	defer (*indexContent1).Close()
 	if err != nil {
 		t.Error(err)
@@ -79,6 +84,8 @@ queries:
   - query: "select * from test.table1 where last_update > $1"
     index: "out_index"
     updateDate: "last_update"
+elastic:
+  url: http://localhost:9200
 `
 
 	// Prepare data you want to return without reading from the file

@@ -3,9 +3,11 @@ package elastic
 import (
 	"bytes"
 	"context"
+	"dariobalinzo.com/elastic/v2/config"
 	"encoding/json"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"log"
 	"strings"
 	"time"
@@ -15,17 +17,57 @@ import (
 	"github.com/elastic/go-elasticsearch/v7/esutil"
 )
 
-var es *elasticsearch.Client
+type elasticRepository struct {
+	es            *elasticsearch.Client
+	numWorkers    int
+	flushBytes    int
+	flushInterval time.Duration
+}
 
-func init() {
-	var err error
-	es, err = elasticsearch.NewDefaultClient()
-	if err != nil {
-		log.Fatalf("Error creating the client: %s", err)
+func NewDefaultClient() (*elasticRepository, error) {
+	if es, err := elasticsearch.NewDefaultClient(); err != nil {
+		return &elasticRepository{}, err
+	} else {
+		return &elasticRepository{
+			es:            es,
+			numWorkers:    1,
+			flushBytes:    100000,
+			flushInterval: 30 * time.Second}, nil
 	}
 }
 
-func Index(index string, document map[string]interface{}) error {
+func NewClient(config *config.ImportConfig) (*elasticRepository, error) {
+	cfg := elasticsearch.Config{
+		Addresses: []string{
+			config.Elastic.Url,
+		},
+	}
+
+	if config.Elastic.User != "" {
+		cfg.Username = config.Elastic.User
+		cfg.Password = config.Elastic.Password
+	}
+
+	if config.Elastic.CaCertPath != "" {
+		cert, err := ioutil.ReadFile(config.Elastic.CaCertPath)
+		if err != nil {
+			return nil, err
+		}
+		cfg.CACert = cert
+	}
+
+	if es, err := elasticsearch.NewClient(cfg); err != nil {
+		return &elasticRepository{}, err
+	} else {
+		return &elasticRepository{
+			es:            es,
+			numWorkers:    1,
+			flushBytes:    100000,
+			flushInterval: 30 * time.Second}, nil
+	}
+}
+
+func (repo *elasticRepository) Index(index string, document map[string]interface{}) error {
 	jsonBytes, err := json.Marshal(document)
 	if err != nil {
 		return nil
@@ -36,7 +78,7 @@ func Index(index string, document map[string]interface{}) error {
 		Body: bytes.NewReader(jsonBytes),
 	}
 
-	res, err := req.Do(context.Background(), es)
+	res, err := req.Do(context.Background(), repo.es)
 	if err != nil {
 		return err
 	}
@@ -48,13 +90,13 @@ func Index(index string, document map[string]interface{}) error {
 	return nil
 }
 
-func GetBulkIndexer(index string) (esutil.BulkIndexer, error) {
+func (repo *elasticRepository) GetBulkIndexer(index string) (esutil.BulkIndexer, error) {
 	bi, err := esutil.NewBulkIndexer(esutil.BulkIndexerConfig{
 		Index:         index,
-		Client:        es,
-		NumWorkers:    10,               //todo config
-		FlushBytes:    100000,           //todo config
-		FlushInterval: 30 * time.Second, // todoconfig
+		Client:        repo.es,
+		NumWorkers:    repo.numWorkers,
+		FlushBytes:    repo.flushBytes,
+		FlushInterval: repo.flushInterval,
 	})
 	if err != nil {
 		return nil, fmt.Errorf("error getting bulkIndexer: %s", err)
@@ -62,8 +104,8 @@ func GetBulkIndexer(index string) (esutil.BulkIndexer, error) {
 	return bi, nil
 }
 
-func FindLastUpdateOrEpochDate(index, sortingField string) (*time.Time, error) {
-	lastDate, err := FindLastUpdate(index, sortingField)
+func (repo *elasticRepository) FindLastUpdateOrEpochDate(index, sortingField string) (*time.Time, error) {
+	lastDate, err := repo.FindLastUpdate(index, sortingField)
 	if err != nil {
 		return nil, err
 	}
@@ -78,8 +120,8 @@ func FindLastUpdateOrEpochDate(index, sortingField string) (*time.Time, error) {
 	return lastDate, err
 }
 
-func FindLastUpdate(index, sortingField string) (*time.Time, error) {
-	err := Refresh(index)
+func (repo *elasticRepository) FindLastUpdate(index, sortingField string) (*time.Time, error) {
+	err := repo.Refresh(index)
 	if err != nil {
 		return nil, err
 	}
@@ -102,10 +144,10 @@ func FindLastUpdate(index, sortingField string) (*time.Time, error) {
 
 	var mapResp map[string]interface{}
 
-	res, err := es.Search(
-		es.Search.WithContext(context.Background()),
-		es.Search.WithIndex(index),
-		es.Search.WithBody(strings.NewReader(query)),
+	res, err := repo.es.Search(
+		repo.es.Search.WithContext(context.Background()),
+		repo.es.Search.WithIndex(index),
+		repo.es.Search.WithBody(strings.NewReader(query)),
 	)
 
 	if err != nil {
@@ -138,8 +180,8 @@ func FindLastUpdate(index, sortingField string) (*time.Time, error) {
 
 }
 
-func FindIndexContent(index, sortingField string) (*io.ReadCloser, error) {
-	err := Refresh(index)
+func (repo *elasticRepository) FindIndexContent(index, sortingField string) (*io.ReadCloser, error) {
+	err := repo.Refresh(index)
 	if err != nil {
 		return nil, err
 	}
@@ -157,10 +199,10 @@ func FindIndexContent(index, sortingField string) (*io.ReadCloser, error) {
 	`
 	query = replaceOrderByField(query, sortingField)
 
-	res, err := es.Search(
-		es.Search.WithContext(context.Background()),
-		es.Search.WithIndex(index),
-		es.Search.WithBody(strings.NewReader(query)),
+	res, err := repo.es.Search(
+		repo.es.Search.WithContext(context.Background()),
+		repo.es.Search.WithIndex(index),
+		repo.es.Search.WithBody(strings.NewReader(query)),
 	)
 
 	if err != nil {
@@ -175,15 +217,15 @@ func replaceOrderByField(query, sortingField string) string {
 	return query
 }
 
-func Refresh(index string) error {
+func (repo *elasticRepository) Refresh(index string) error {
 	r := esapi.IndicesRefreshRequest{
 		Index: []string{index},
 	}
-	_, err := r.Do(context.Background(), es)
+	_, err := r.Do(context.Background(), repo.es)
 	return err
 }
 
-func Delete(index string) error {
-	_, err := es.Indices.Delete([]string{index})
+func (repo *elasticRepository) Delete(index string) error {
+	_, err := repo.es.Indices.Delete([]string{index})
 	return err
 }

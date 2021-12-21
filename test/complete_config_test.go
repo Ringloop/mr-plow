@@ -36,6 +36,8 @@ queries:
         attributes:
           attributeName: attribute_1_Name_2
           attributeType: attribute_1_Type_2
+elastic:
+  url: http://localhost:9200
 `
 
 	// Prepare data you want to return without reading from the file
