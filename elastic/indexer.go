@@ -62,13 +62,14 @@ func GetBulkIndexer(index string) (esutil.BulkIndexer, error) {
 	return bi, nil
 }
 
-func FindLastUpdateOrEpochDate(index string) (*time.Time, error) {
-	lastDate, err := FindLastUpdate(index)
+func FindLastUpdateOrEpochDate(index, sortingField string) (*time.Time, error) {
+	lastDate, err := FindLastUpdate(index, sortingField)
 	if err != nil {
 		return nil, err
 	}
 
 	if lastDate == nil {
+		log.Printf("cannot found old values for %s", sortingField)
 		var defaultDate time.Time
 		defaultDate, err = time.Parse(time.RFC3339, "1970-01-01T00:00:00+00:00")
 		lastDate = &defaultDate
@@ -77,7 +78,7 @@ func FindLastUpdateOrEpochDate(index string) (*time.Time, error) {
 	return lastDate, err
 }
 
-func FindLastUpdate(index string) (*time.Time, error) {
+func FindLastUpdate(index, sortingField string) (*time.Time, error) {
 	err := Refresh(index)
 	if err != nil {
 		return nil, err
@@ -86,17 +87,18 @@ func FindLastUpdate(index string) (*time.Time, error) {
 	{
 		"sort": [
 		  {
-			"last_update": {
+			"$order": {
 			  "order": "desc"
 			}
 		  }
 		],
 		"size": 1,
 		"_source": [
-		  "last_update"
+		  "$order"
 		  ]
 	}
 	`
+	query = replaceOrderByField(query, sortingField)
 
 	var mapResp map[string]interface{}
 
@@ -126,8 +128,8 @@ func FindLastUpdate(index string) (*time.Time, error) {
 		}
 
 		data := hitsList[0].(map[string]interface{})["_source"].(map[string]interface{})
-		last_update := data["last_update"].(string)
-		fmt.Println("data:", last_update)
+		last_update := data[sortingField].(string)
+		log.Println("found old data:", last_update)
 
 		parsed_last_date, err := time.Parse(time.RFC3339, last_update)
 		return &parsed_last_date, err
@@ -153,7 +155,7 @@ func FindIndexContent(index, sortingField string) (*io.ReadCloser, error) {
 		"size": 1000
 	}
 	`
-	query = strings.Replace(query, "$order", sortingField, 1)
+	query = replaceOrderByField(query, sortingField)
 
 	res, err := es.Search(
 		es.Search.WithContext(context.Background()),
@@ -166,6 +168,11 @@ func FindIndexContent(index, sortingField string) (*io.ReadCloser, error) {
 	} else {
 		return &res.Body, nil
 	}
+}
+
+func replaceOrderByField(query, sortingField string) string {
+	query = strings.Replace(query, "$order", sortingField, 2)
+	return query
 }
 
 func Refresh(index string) error {
