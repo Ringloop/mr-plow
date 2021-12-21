@@ -3,6 +3,7 @@ package config
 import (
 	"errors"
 	"fmt"
+	"log"
 
 	"gopkg.in/yaml.v2"
 )
@@ -27,6 +28,7 @@ type ElasticConfig struct {
 	User       string `yaml:"user"`
 	Password   string `yaml:"password"`
 	CaCertPath string `yaml:"caCertPath"`
+	NumWorker  int    `yaml:"NumWorker"`
 }
 
 type ImportConfig struct {
@@ -60,6 +62,11 @@ func ParseConfiguration(reader IReader) (*ImportConfig, error) {
 
 	if importConfiguration.Elastic.Url == "" {
 		return nil, errors.New("missing elastic url (elastic.url)")
+	}
+
+	if importConfiguration.Elastic.NumWorker < 1 {
+		importConfiguration.Elastic.NumWorker = 1
+		log.Println("using default worker = 1 for each elasticsearch indexer")
 	}
 
 	if err != nil {

@@ -61,7 +61,7 @@ func NewClient(config *config.ImportConfig) (*Repository, error) {
 	} else {
 		return &Repository{
 			es:            es,
-			numWorkers:    1,
+			numWorkers:    config.Elastic.NumWorker,
 			flushBytes:    100000,
 			flushInterval: 30 * time.Second}, nil
 	}
