@@ -5,6 +5,7 @@ import (
 	"context"
 	"database/sql"
 	"encoding/json"
+	"fmt"
 	"log"
 
 	"dariobalinzo.com/elastic/v2/config"
@@ -74,7 +75,7 @@ func MoveData(db *sql.DB, globalConfig *config.ImportConfig, queryConf config.Qu
 			return err
 		}
 
-		err = elasticBulk.Add(context.Background(), esutil.BulkIndexerItem{
+		bulkItem := esutil.BulkIndexerItem{
 			Action: "index",
 			Body:   bytes.NewBuffer(documentToSend),
 			OnFailure: func(ctx context.Context, item esutil.BulkIndexerItem, res esutil.BulkIndexerResponseItem, err error) {
@@ -84,11 +85,24 @@ func MoveData(db *sql.DB, globalConfig *config.ImportConfig, queryConf config.Qu
 					log.Printf("ERROR: %s: %s", res.Error.Type, res.Error.Reason)
 				}
 			},
-		})
+		}
+		addDocumentId(&queryConf, document, &bulkItem)
+
+		err = elasticBulk.Add(context.Background(), bulkItem)
 		if err != nil {
 			return err
 		}
 	}
 	return nil
 
+}
+
+func addDocumentId(queryConf *config.QueryModel, document map[string]interface{}, bulkItem *esutil.BulkIndexerItem) {
+	if queryConf.Id != "" {
+		id, present := document[queryConf.Id]
+		if present {
+			idAsString := fmt.Sprint(id)
+			bulkItem.DocumentID = idAsString
+		}
+	}
 }
