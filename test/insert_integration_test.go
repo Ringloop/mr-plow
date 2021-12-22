@@ -11,10 +11,10 @@ import (
 	_ "github.com/lib/pq"
 )
 
-type ReaderIntegrationTest struct{}
+type insertIntegrationTest struct{}
 
 // test case config scenario
-func (*ReaderIntegrationTest) ReadConfig() ([]byte, error) {
+func (*insertIntegrationTest) ReadConfig() ([]byte, error) {
 
 	testComplexConfig := `
 database: "postgres://user:pwd@localhost:5432/postgres?sslmode=disable"
@@ -30,9 +30,9 @@ elastic:
 	return []byte(testComplexConfig), nil
 }
 
-func TestIntegration(t *testing.T) {
+func TestInsertIntegration(t *testing.T) {
 	//given (some data on sql db)
-	conf := initConfigIntegrationTest(t, &ReaderIntegrationTest{})
+	conf := initConfigIntegrationTest(t, &insertIntegrationTest{})
 	db := initSqlDB(t, conf)
 	defer db.Close()
 	repo, err := elastic.NewDefaultClient()
