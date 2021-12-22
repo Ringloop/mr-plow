@@ -1,21 +1,38 @@
 package test
 
 import (
-	"database/sql"
 	"encoding/json"
 	"log"
 	"testing"
 
-	"dariobalinzo.com/elastic/v2/config"
 	"dariobalinzo.com/elastic/v2/elastic"
 	"dariobalinzo.com/elastic/v2/movedata"
 	"dariobalinzo.com/elastic/v2/test_util"
 	_ "github.com/lib/pq"
 )
 
+type ReaderIntegrationTest struct{}
+
+// test case config scenario
+func (*ReaderIntegrationTest) ReadConfig() ([]byte, error) {
+
+	testComplexConfig := `
+database: "postgres://user:pwd@localhost:5432/postgres?sslmode=disable"
+queries:
+  - query: "select * from test.table1 where last_update > $1"
+    index: "out_index"
+    updateDate: "last_update"
+elastic:
+  url: http://localhost:9200
+`
+
+	// Prepare data you want to return without reading from the file
+	return []byte(testComplexConfig), nil
+}
+
 func TestIntegration(t *testing.T) {
 	//given (some data on sql db)
-	conf := initConfigIntegrationTest(t)
+	conf := initConfigIntegrationTest(t, &ReaderIntegrationTest{})
 	db := initSqlDB(t, conf)
 	defer db.Close()
 	repo, err := elastic.NewDefaultClient()
@@ -67,77 +84,33 @@ func TestIntegration(t *testing.T) {
 		t.FailNow()
 	}
 
-	test_util.AssertEqual(t, response1.Hits.Hits[0].Source.Email, "mario@rossi.it")
 	test_util.AssertEqual(t, len(response1.Hits.Hits), 1)
+	test_util.AssertEqual(t, response1.Hits.Hits[0].Source.Email, "mario@rossi.it")
 	test_util.AssertNotNull(t, response1.Hits.Hits[0].Source.LastUpdate)
 	test_util.AssertNotNull(t, response1.Hits.Hits[0].Source.UserID)
-}
 
-type readerIntegrationTest struct{}
+	//and when (inserting new data)
+	insertData(db, "mario@rossi.it", t)
 
-// 'readerTest' implementing the Interface
-func (*readerIntegrationTest) ReadConfig() ([]byte, error) {
-
-	testComplexConfig := `
-database: "postgres://user:pwd@localhost:5432/postgres?sslmode=disable"
-queries:
-  - query: "select * from test.table1 where last_update > $1"
-    index: "out_index"
-    updateDate: "last_update"
-elastic:
-  url: http://localhost:9200
-`
-
-	// Prepare data you want to return without reading from the file
-	return []byte(testComplexConfig), nil
-}
-
-func initConfigIntegrationTest(t *testing.T) *config.ImportConfig {
-	testReader := readerIntegrationTest{}
-	conf, err := config.ParseConfiguration(&testReader)
+	// and then (the data is moved)
+	err = movedata.MoveData(db, conf, conf.Queries[0])
 	if err != nil {
-		t.Error("error reading conf", err)
-		t.FailNow()
-	}
-	return conf
-}
-
-func initSqlDB(t *testing.T, conf *config.ImportConfig) *sql.DB {
-	db, err := sql.Open("postgres", conf.Database)
-	if err != nil {
-		t.Error("error connecting to sql db", err)
+		t.Error("error data moving", err)
 		t.FailNow()
 	}
 
-	_, err = db.Exec(`
-
-	DROP SCHEMA IF EXISTS test CASCADE;
-	CREATE SCHEMA test;
-
-	DROP TABLE IF EXISTS test.table1;
-	CREATE TABLE test.table1 (
-		user_id SERIAL PRIMARY KEY,
-		email VARCHAR ( 255 ) UNIQUE NOT NULL,
-		last_update TIMESTAMP NOT NULL
-	)
-	
-	`)
-
+	indexContent2, err := repo.FindIndexContent("out_index", "last_update")
+	defer (*indexContent2).Close()
 	if err != nil {
-		t.Error("error creating schema", err)
+		t.Error(err)
 		t.FailNow()
 	}
 
-	return db
-}
-
-func insertData(db *sql.DB, _ string, t *testing.T) {
-	_, err := db.Exec(`
-		INSERT INTO test.table1 (email,last_update) 
-		VALUES('mario@rossi.it', now())
-	`)
-	if err != nil {
-		t.Error("Error insert temp table: ", err)
+	var response2 ElasticTestResponse
+	if err := json.NewDecoder(*indexContent2).Decode(&response2); err != nil {
+		t.Error(err)
 		t.FailNow()
 	}
+
+	test_util.AssertEqual(t, len(response2.Hits.Hits), 2)
 }
