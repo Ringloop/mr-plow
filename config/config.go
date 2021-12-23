@@ -21,6 +21,7 @@ type QueryModel struct {
 	Query      string     `yaml:"query"`
 	UpdateDate string     `yaml:"updateDate"`
 	JSONFields JSONFields `yaml:"JSONFields"`
+	Id         string     `yaml:"id"`
 }
 
 type ElasticConfig struct {
@@ -38,7 +39,6 @@ type ImportConfig struct {
 }
 
 func ParseConfiguration(reader IReader) (*ImportConfig, error) {
-
 	yamlFile, err := reader.ReadConfig()
 	if err != nil {
 		return nil, err
