@@ -1,5 +1,8 @@
 ![Build passing](https://github.com/Ringloop/mr-plow/workflows/ci.yml/badge.svg)
 
+[![Actions Status](https://github.com/<github_username>/<repo>/workflows/build/badge.svg)](https://github.com/Ringloop/mr-plow/actions)
+[![codecov](https://codecov.io/gh/<github_username>/<repo>/branch/master/graph/badge.svg)](https://codecov.io/gh/Ringloop/mr-plow)
+
 # Mr-Plow
 Tiny and minimal tool to export data from relational db (postgres or mysql) to elasticsearch.
 
