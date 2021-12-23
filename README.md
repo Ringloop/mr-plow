@@ -1,9 +1,10 @@
-![Build passing](https://github.com/Ringloop/mr-plow/workflows/ci.yml/badge.svg)
+![example workflow](https://github.com/Ringloop/mr-plow/actions/workflows/ci.yml/badge.svg)
+[![codecov](https://codecov.io/gh/Ringloop/mr-plow/branch/master/graph/badge.svg)](https://codecov.io/gh/Ringloop/mr-plow)
 
 # Mr-Plow
 Tiny and minimal tool to export data from relational db (postgres or mysql) to elasticsearch.
 
-The tool does not implement all the logstash feature, but its goal is to is an alternative to logstash when keeping in-sync elastic and a relational database.
+The tool does not implement all the logstash features, but its goal is to be an alternative to logstash when keeping in-sync elastic and a relational database.
 
 ### Goal
 **Low memory usage**: (~15 MB when idle, great to be deployed on cloud environments).
