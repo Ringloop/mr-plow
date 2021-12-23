@@ -1,6 +1,4 @@
-![Build passing](https://github.com/Ringloop/mr-plow/workflows/ci.yml/badge.svg)
-
-[![Actions Status](https://github.com/Ringloop/mr-plow/workflows/build/badge.svg)](https://github.com/Ringloop/mr-plow/actions)
+![example workflow](https://github.com/Ringloop/mr-plow/actions/workflows/ci.yml/badge.svg)
 [![codecov](https://codecov.io/gh/Ringloop/mr-plow/branch/master/graph/badge.svg)](https://codecov.io/gh/Ringloop/mr-plow)
 
 # Mr-Plow
