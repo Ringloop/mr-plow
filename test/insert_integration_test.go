@@ -57,8 +57,8 @@ func TestInsertIntegration(t *testing.T) {
 	mover := movedata.New(db, conf, &conf.Queries[0])
 	doMove := func() {
 		defer allMovesDone.Done()
-		err = mover.MoveData()
-		if err != nil {
+		errRoutine := mover.MoveData()
+		if errRoutine != nil {
 			t.Error("error data moving", err)
 			t.FailNow()
 		}
