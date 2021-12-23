@@ -1,4 +1,4 @@
-module github.com/Ringloop/Mr-Plow
+module github.com/Ringloop/mr-plow
 
 go 1.17
 

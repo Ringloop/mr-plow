@@ -3,10 +3,10 @@ package main
 import (
 	"database/sql"
 	"flag"
-	"github.com/Ringloop/Mr-Plow/scheduler"
+	"github.com/Ringloop/mr-plow/scheduler"
 	"log"
 
-	"github.com/Ringloop/Mr-Plow/config"
+	"github.com/Ringloop/mr-plow/config"
 	_ "github.com/go-sql-driver/mysql"
 	_ "github.com/lib/pq"
 )

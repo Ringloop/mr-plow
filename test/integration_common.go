@@ -2,7 +2,7 @@ package test
 
 import (
 	"database/sql"
-	"github.com/Ringloop/Mr-Plow/config"
+	"github.com/Ringloop/mr-plow/config"
 	"testing"
 )
 
