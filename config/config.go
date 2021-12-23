@@ -51,6 +51,10 @@ func ParseConfiguration(reader IReader) (*ImportConfig, error) {
 		return &ImportConfig{}, err
 	}
 
+	if importConfiguration.PollingSeconds == 0 {
+		return nil, errors.New("missing polling seconds url (pollingSeconds)")
+	}
+
 	if importConfiguration.Database == "" {
 		return nil, errors.New("missing database url (database)")
 	}

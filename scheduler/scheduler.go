@@ -12,7 +12,7 @@ import (
 )
 
 func MoveDataUntilExit(conf *config.ImportConfig, db *sql.DB, query *config.QueryModel) {
-	ticker := time.NewTicker(time.Second * 1)
+	ticker := time.NewTicker(time.Duration(conf.PollingSeconds * 1000000000))
 	defer ticker.Stop()
 	done := make(chan os.Signal)
 	signal.Notify(done, os.Interrupt, syscall.SIGTERM)
