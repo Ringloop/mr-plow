@@ -19,13 +19,27 @@ type Mover struct {
 	db           *sql.DB
 	globalConfig *config.ImportConfig
 	queryConf    config.QueryModel
+	canExec      chan bool
 }
 
-func New(db *sql.DB, globalConfig *config.ImportConfig, queryConf config.QueryModel) Mover {
-	return Mover{db, globalConfig, queryConf}
+func New(db *sql.DB, globalConfig *config.ImportConfig, queryConf config.QueryModel) *Mover {
+	mover := &Mover{db, globalConfig, queryConf, make(chan bool, 1)}
+	mover.canExec <- true
+	return mover
 }
 
 func (mover *Mover) MoveData() error {
+	select {
+	case <-mover.canExec:
+	default:
+		log.Printf("Skipping execution of %s, since the previous one is still executing", mover.queryConf.Query)
+		return nil
+	}
+
+	defer func() {
+		mover.canExec <- true
+	}()
+
 	repo, err := elastic.NewClient(mover.globalConfig)
 	if err != nil {
 		return err
