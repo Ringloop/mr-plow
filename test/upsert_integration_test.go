@@ -5,9 +5,9 @@ import (
 	"log"
 	"testing"
 
-	"dariobalinzo.com/elastic/v2/elastic"
-	"dariobalinzo.com/elastic/v2/movedata"
-	"dariobalinzo.com/elastic/v2/test_util"
+	"github.com/Ringloop/Mr-Plow/elastic"
+	"github.com/Ringloop/Mr-Plow/movedata"
+	"github.com/Ringloop/Mr-Plow/test_util"
 	_ "github.com/lib/pq"
 )
 
@@ -17,6 +17,7 @@ type upsertIntegrationTest struct{}
 func (*upsertIntegrationTest) ReadConfig() ([]byte, error) {
 
 	testComplexConfig := `
+pollingSeconds: 5
 database: "postgres://user:pwd@localhost:5432/postgres?sslmode=disable"
 queries:
   - query: "select * from test.table1 where last_update > $1"
@@ -51,7 +52,8 @@ func TestUpsertIntegration(t *testing.T) {
 	}
 
 	//when (moving data to elastic)
-	err = movedata.MoveData(db, conf, conf.Queries[0])
+	mover := movedata.New(db, conf, &conf.Queries[0])
+	err = mover.MoveData()
 	if err != nil {
 		t.Error("error data moving", err)
 		t.FailNow()
@@ -95,7 +97,7 @@ func TestUpsertIntegration(t *testing.T) {
 	insertData(db, "mario@rossi.it", t)
 
 	// and then (the data is moved)
-	err = movedata.MoveData(db, conf, conf.Queries[0])
+	err = mover.MoveData()
 	if err != nil {
 		t.Error("error data moving", err)
 		t.FailNow()

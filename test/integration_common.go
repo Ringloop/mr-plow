@@ -1,8 +1,8 @@
 package test
 
 import (
-	"dariobalinzo.com/elastic/v2/config"
 	"database/sql"
+	"github.com/Ringloop/Mr-Plow/config"
 	"testing"
 )
 

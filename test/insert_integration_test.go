@@ -3,11 +3,12 @@ package test
 import (
 	"encoding/json"
 	"log"
+	"sync"
 	"testing"
 
-	"dariobalinzo.com/elastic/v2/elastic"
-	"dariobalinzo.com/elastic/v2/movedata"
-	"dariobalinzo.com/elastic/v2/test_util"
+	"github.com/Ringloop/Mr-Plow/elastic"
+	"github.com/Ringloop/Mr-Plow/movedata"
+	"github.com/Ringloop/Mr-Plow/test_util"
 	_ "github.com/lib/pq"
 )
 
@@ -17,6 +18,7 @@ type insertIntegrationTest struct{}
 func (*insertIntegrationTest) ReadConfig() ([]byte, error) {
 
 	testComplexConfig := `
+pollingSeconds: 1
 database: "postgres://user:pwd@localhost:5432/postgres?sslmode=disable"
 queries:
   - query: "select * from test.table1 where last_update > $1"
@@ -49,12 +51,24 @@ func TestInsertIntegration(t *testing.T) {
 		t.FailNow()
 	}
 
-	//when (moving data to elastic)
-	err = movedata.MoveData(db, conf, conf.Queries[0])
-	if err != nil {
-		t.Error("error data moving", err)
-		t.FailNow()
+	//when (moving data to elastic
+	var allMovesDone sync.WaitGroup
+	allMovesDone.Add(5)
+	mover := movedata.New(db, conf, &conf.Queries[0])
+	doMove := func() {
+		defer allMovesDone.Done()
+		err = mover.MoveData()
+		if err != nil {
+			t.Error("error data moving", err)
+			t.FailNow()
+		}
 	}
+
+	//(testing also long-running execution by executing the function as separate go routine))
+	for i := 0; i < 5; i++ {
+		go doMove()
+	}
+	allMovesDone.Wait()
 
 	//then (last date on elastic should be updated)
 	lastImportedDate, err := repo.FindLastUpdateOrEpochDate(conf.Queries[0].Index, conf.Queries[0].UpdateDate)
@@ -93,7 +107,7 @@ func TestInsertIntegration(t *testing.T) {
 	insertData(db, "mario@rossi.it", t)
 
 	// and then (the data is moved)
-	err = movedata.MoveData(db, conf, conf.Queries[0])
+	err = mover.MoveData()
 	if err != nil {
 		t.Error("error data moving", err)
 		t.FailNow()

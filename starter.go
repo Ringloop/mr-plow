@@ -2,11 +2,10 @@ package main
 
 import (
 	"database/sql"
+	"github.com/Ringloop/Mr-Plow/scheduler"
 	"log"
 
-	"dariobalinzo.com/elastic/v2/config"
-	"dariobalinzo.com/elastic/v2/movedata"
-
+	"github.com/Ringloop/Mr-Plow/config"
 	_ "github.com/lib/pq"
 )
 
@@ -22,20 +21,17 @@ func main() {
 func ConnectAndStart(conf *config.ImportConfig) {
 	db, err := sql.Open("postgres", conf.Database)
 	if err != nil {
-		log.Fatal("Failed to open a DB connection: ", err)
+		log.Printf("Failed to open a DB connection: %s", err)
+		return
 	}
-	defer db.Close()
-
-	log.Println("Connected to postgres", err)
-
+	defer func(db *sql.DB) {
+		err := db.Close()
+		if err != nil {
+			log.Printf("error in closing postgres connection: %s", err)
+		}
+	}(db)
+	log.Println("Connected to postgres")
 	for _, c := range conf.Queries {
-		go func(c config.QueryModel) {
-			moveErr := movedata.MoveData(db, conf, c)
-			if moveErr != nil {
-				log.Fatal("error execurting query", err)
-			}
-		}(c)
-
+		go scheduler.MoveDataUntilExit(conf, db, &c)
 	}
-
 }

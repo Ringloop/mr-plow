@@ -33,9 +33,10 @@ type ElasticConfig struct {
 }
 
 type ImportConfig struct {
-	Database string        `yaml:"database"`
-	Queries  []QueryModel  `yaml:"queries"`
-	Elastic  ElasticConfig `yaml:"elastic"`
+	PollingSeconds int           `yaml:"pollingSeconds"`
+	Database       string        `yaml:"database"`
+	Queries        []QueryModel  `yaml:"queries"`
+	Elastic        ElasticConfig `yaml:"elastic"`
 }
 
 func ParseConfiguration(reader IReader) (*ImportConfig, error) {
@@ -48,6 +49,10 @@ func ParseConfiguration(reader IReader) (*ImportConfig, error) {
 	err = yaml.Unmarshal(yamlFile, importConfiguration)
 	if err != nil {
 		return &ImportConfig{}, err
+	}
+
+	if importConfiguration.PollingSeconds == 0 {
+		return nil, errors.New("missing polling seconds url (pollingSeconds)")
 	}
 
 	if importConfiguration.Database == "" {

@@ -3,9 +3,9 @@ package elastic
 import (
 	"bytes"
 	"context"
-	"dariobalinzo.com/elastic/v2/config"
 	"encoding/json"
 	"fmt"
+	"github.com/Ringloop/Mr-Plow/config"
 	"io"
 	"io/ioutil"
 	"log"

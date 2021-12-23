@@ -22,3 +22,11 @@ type ElasticTestResponse struct {
 		} `json:"hits"`
 	} `json:"hits"`
 }
+
+type FakeExitSignal struct{}
+
+func (FakeExitSignal) String() string {
+	return "Fake exit"
+}
+
+func (FakeExitSignal) Signal() {}

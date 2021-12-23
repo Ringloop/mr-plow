@@ -3,9 +3,9 @@ package test
 import (
 	"testing"
 
-	"dariobalinzo.com/elastic/v2/test_util"
+	"github.com/Ringloop/Mr-Plow/test_util"
 
-	"dariobalinzo.com/elastic/v2/config"
+	"github.com/Ringloop/Mr-Plow/config"
 )
 
 type readerComplexTest struct{}
@@ -14,6 +14,7 @@ type readerComplexTest struct{}
 func (*readerComplexTest) ReadConfig() ([]byte, error) {
 
 	testComplexConfig := `
+pollingSeconds: 5
 database: "databaseValue"
 queries:
   - query: "query_0_Value"
