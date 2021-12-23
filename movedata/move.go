@@ -46,7 +46,12 @@ func MoveData(db *sql.DB, c config.QueryModel) error {
 		columns := make([]interface{}, len(cols))
 		columnPointers := make([]interface{}, len(cols))
 		for i := range columns {
+
 			columnPointers[i] = &columns[i]
+
+			//HERE:
+			// per ogni ColumnPointers[i] devo fare la validazione del tipo. Se il target è intero, chiama la funzione giusta
+
 		}
 
 		if err := rows.Scan(columnPointers...); err != nil {
@@ -56,14 +61,18 @@ func MoveData(db *sql.DB, c config.QueryModel) error {
 		document := make(map[string]interface{})
 		for i, colName := range cols {
 			val := columnPointers[i].(*interface{})
-			document[colName] = *val
+
+			//Qua va fatta la stessa cosa di sopra agendo su VAL
+
+			document[colName] = *val //qui ci andrà messo il tipo convertito
 		}
 
 		for _, jsonfield := range c.JSONFields {
 			//TODO: check if jsonField is a json itself
 
-			//TODO: Build the json structurex
+			//TODO: Build the json structure
 			var jsonData map[string]interface{}
+
 			//TODO: Throw an error if the fieldName cannot be found
 			byteData := document[jsonfield.FieldName].([]byte)
 			//TODO consider also the field types in parsing
