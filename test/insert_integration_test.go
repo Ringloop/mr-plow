@@ -3,6 +3,7 @@ package test
 import (
 	"encoding/json"
 	"log"
+	"sync"
 	"testing"
 
 	"github.com/Ringloop/Mr-Plow/elastic"
@@ -50,13 +51,24 @@ func TestInsertIntegration(t *testing.T) {
 		t.FailNow()
 	}
 
-	//when (moving data to elastic)
+	//when (moving data to elastic
+	var allMovesDone sync.WaitGroup
+	allMovesDone.Add(5)
 	mover := movedata.New(db, conf, &conf.Queries[0])
-	err = mover.MoveData()
-	if err != nil {
-		t.Error("error data moving", err)
-		t.FailNow()
+	doMove := func() {
+		defer allMovesDone.Done()
+		err = mover.MoveData()
+		if err != nil {
+			t.Error("error data moving", err)
+			t.FailNow()
+		}
 	}
+
+	//(testing also long-running execution by executing the function as separate go routine))
+	for i := 0; i < 5; i++ {
+		go doMove()
+	}
+	allMovesDone.Wait()
 
 	//then (last date on elastic should be updated)
 	lastImportedDate, err := repo.FindLastUpdateOrEpochDate(conf.Queries[0].Index, conf.Queries[0].UpdateDate)

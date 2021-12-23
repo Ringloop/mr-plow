@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"time"
 
 	"github.com/Ringloop/Mr-Plow/config"
 	"github.com/Ringloop/Mr-Plow/elastic"
@@ -16,6 +17,7 @@ import (
 )
 
 type Mover struct {
+	lastDate     *time.Time
 	db           *sql.DB
 	globalConfig *config.ImportConfig
 	queryConf    *config.QueryModel
@@ -23,7 +25,11 @@ type Mover struct {
 }
 
 func New(db *sql.DB, globalConfig *config.ImportConfig, queryConf *config.QueryModel) *Mover {
-	mover := &Mover{db, globalConfig, queryConf, make(chan bool, 1)}
+	mover := &Mover{
+		db:           db,
+		globalConfig: globalConfig,
+		queryConf:    queryConf,
+		canExec:      make(chan bool, 1)}
 	mover.canExec <- true
 	return mover
 }
@@ -45,11 +51,10 @@ func (mover *Mover) MoveData() error {
 		return err
 	}
 
-	lastDate, err := repo.FindLastUpdateOrEpochDate(mover.queryConf.Index, mover.queryConf.UpdateDate)
+	lastDate, err := mover.getLastDate(repo)
 	if err != nil {
 		return err
 	}
-	log.Print("found last date ", lastDate)
 
 	elasticBulk, err := repo.GetBulkIndexer(mover.queryConf.Index)
 	if err != nil {
@@ -111,6 +116,10 @@ func (mover *Mover) MoveData() error {
 			},
 		}
 		addDocumentId(mover.queryConf, document, &bulkItem)
+		err = mover.updateLastUpdate(mover.queryConf, document)
+		if err != nil {
+			return err
+		}
 
 		err = elasticBulk.Add(context.Background(), bulkItem)
 		if err != nil {
@@ -119,6 +128,32 @@ func (mover *Mover) MoveData() error {
 	}
 	return nil
 
+}
+
+func (mover *Mover) getLastDate(repo *elastic.Repository) (*time.Time, error) {
+	if mover.lastDate != nil {
+		return mover.lastDate, nil
+	}
+
+	lastDate, err := repo.FindLastUpdateOrEpochDate(mover.queryConf.Index, mover.queryConf.UpdateDate)
+	if err != nil {
+		return nil, err
+	}
+	log.Print("found last date ", lastDate)
+	return lastDate, nil
+}
+
+func (mover *Mover) updateLastUpdate(conf *config.QueryModel, document map[string]interface{}) error {
+	date, ok := document[conf.UpdateDate]
+	if !ok {
+		return fmt.Errorf("cannot found %s in results set of %s", conf.UpdateDate, conf.Query)
+	}
+	dateParsed, ok := date.(time.Time)
+	if !ok {
+		return fmt.Errorf("cannot cast to date %s in results set of %s", date, conf.Query)
+	}
+	mover.lastDate = &dateParsed
+	return nil
 }
 
 func addDocumentId(queryConf *config.QueryModel, document map[string]interface{}, bulkItem *esutil.BulkIndexerItem) {
