@@ -21,12 +21,13 @@ func main() {
 func ConnectAndStart(conf *config.ImportConfig) {
 	db, err := sql.Open("postgres", conf.Database)
 	if err != nil {
-		log.Fatal("Failed to open a DB connection: ", err)
+		log.Printf("Failed to open a DB connection: %s", err)
+		return
 	}
 	defer func(db *sql.DB) {
 		err := db.Close()
 		if err != nil {
-			log.Fatal("error in closing postgres connection", err)
+			log.Printf("error in closing postgres connection: %s", err)
 		}
 	}(db)
 	log.Println("Connected to postgres")

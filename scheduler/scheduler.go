@@ -27,7 +27,7 @@ func MoveDataUntilExit(conf *config.ImportConfig, db *sql.DB, query *config.Quer
 		case <-ticker.C:
 			moveErr := mover.MoveData()
 			if moveErr != nil {
-				log.Fatal("error executing query", moveErr)
+				log.Printf("error executing query %s", moveErr)
 			}
 		case <-Done:
 			log.Println("stopping query execution, bye...")
