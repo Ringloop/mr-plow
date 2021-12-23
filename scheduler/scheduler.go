@@ -2,8 +2,8 @@ package scheduler
 
 import (
 	"database/sql"
-	"github.com/Ringloop/Mr-Plow/config"
-	"github.com/Ringloop/Mr-Plow/movedata"
+	"github.com/Ringloop/mr-plow/config"
+	"github.com/Ringloop/mr-plow/movedata"
 	"log"
 	"os"
 	"os/signal"
@@ -17,7 +17,7 @@ func init() {
 	signal.Notify(Done, os.Interrupt, syscall.SIGTERM)
 }
 
-func MoveDataUntilExit(conf *config.ImportConfig, db *sql.DB, query *config.QueryModel) {
+func MoveDataUntilExit(conf *config.ImportConfig, db *sql.DB, query *config.QueryModel, finished chan bool) {
 	ticker := time.NewTicker(time.Duration(conf.PollingSeconds * 1000000000))
 	defer ticker.Stop()
 
@@ -31,6 +31,7 @@ func MoveDataUntilExit(conf *config.ImportConfig, db *sql.DB, query *config.Quer
 			}
 		case <-Done:
 			log.Println("stopping query execution, bye...")
+			finished <- true
 			return
 		}
 	}

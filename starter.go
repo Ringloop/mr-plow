@@ -2,15 +2,20 @@ package main
 
 import (
 	"database/sql"
-	"github.com/Ringloop/Mr-Plow/scheduler"
+	"flag"
+	"github.com/Ringloop/mr-plow/scheduler"
 	"log"
 
-	"github.com/Ringloop/Mr-Plow/config"
+	"github.com/Ringloop/mr-plow/config"
+	_ "github.com/go-sql-driver/mysql"
 	_ "github.com/lib/pq"
 )
 
 func main() {
-	ymlConfReader := config.Reader{FileName: "config.yml"} //TODO parse commandline yml path, now assuming is in current dir
+	configPath := flag.String("config", "./config.yml", "path of the configuration file")
+	flag.Parse()
+
+	ymlConfReader := config.Reader{FileName: *configPath}
 	conf, err := config.ParseConfiguration(&ymlConfReader)
 	if err != nil {
 		log.Fatal("Cannot parse config file", err)
@@ -31,7 +36,13 @@ func ConnectAndStart(conf *config.ImportConfig) {
 		}
 	}(db)
 	log.Println("Connected to postgres")
+
+	finished := make(chan bool)
 	for _, c := range conf.Queries {
-		go scheduler.MoveDataUntilExit(conf, db, &c)
+		go scheduler.MoveDataUntilExit(conf, db, &c, finished)
+	}
+
+	for i := 0; i < len(conf.Queries); i++ {
+		<-finished
 	}
 }
