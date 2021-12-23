@@ -51,7 +51,8 @@ func TestUpsertIntegration(t *testing.T) {
 	}
 
 	//when (moving data to elastic)
-	err = movedata.MoveData(db, conf, conf.Queries[0])
+	mover := movedata.New(db, conf, conf.Queries[0])
+	err = mover.MoveData()
 	if err != nil {
 		t.Error("error data moving", err)
 		t.FailNow()
@@ -95,7 +96,7 @@ func TestUpsertIntegration(t *testing.T) {
 	insertData(db, "mario@rossi.it", t)
 
 	// and then (the data is moved)
-	err = movedata.MoveData(db, conf, conf.Queries[0])
+	err = mover.MoveData()
 	if err != nil {
 		t.Error("error data moving", err)
 		t.FailNow()

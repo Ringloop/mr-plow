@@ -15,26 +15,36 @@ import (
 	_ "github.com/lib/pq"
 )
 
-func MoveData(db *sql.DB, globalConfig *config.ImportConfig, queryConf config.QueryModel) error {
-	repo, err := elastic.NewClient(globalConfig)
+type Mover struct {
+	db           *sql.DB
+	globalConfig *config.ImportConfig
+	queryConf    config.QueryModel
+}
+
+func New(db *sql.DB, globalConfig *config.ImportConfig, queryConf config.QueryModel) Mover {
+	return Mover{db, globalConfig, queryConf}
+}
+
+func (mover *Mover) MoveData() error {
+	repo, err := elastic.NewClient(mover.globalConfig)
 	if err != nil {
 		return err
 	}
 
-	lastDate, err := repo.FindLastUpdateOrEpochDate(queryConf.Index, queryConf.UpdateDate)
+	lastDate, err := repo.FindLastUpdateOrEpochDate(mover.queryConf.Index, mover.queryConf.UpdateDate)
 	if err != nil {
 		return err
 	}
 	log.Print("found last date ", lastDate)
 
-	elasticBulk, err := repo.GetBulkIndexer(queryConf.Index)
+	elasticBulk, err := repo.GetBulkIndexer(mover.queryConf.Index)
 	if err != nil {
 		return err
 	}
 	defer elasticBulk.Close(context.Background())
 
-	log.Print("going to execute query ", queryConf.Query)
-	rows, err := db.Query(queryConf.Query, lastDate)
+	log.Print("going to execute query ", mover.queryConf.Query)
+	rows, err := mover.db.Query(mover.queryConf.Query, lastDate)
 	if err != nil {
 		return err
 	}
@@ -59,7 +69,7 @@ func MoveData(db *sql.DB, globalConfig *config.ImportConfig, queryConf config.Qu
 			document[colName] = *val
 		}
 
-		for _, jsonfield := range queryConf.JSONFields {
+		for _, jsonfield := range mover.queryConf.JSONFields {
 			var jsonData map[string]interface{}
 			byteData := document[jsonfield.FieldName].([]byte)
 			//TODO consider also the field types in parsing
@@ -86,7 +96,7 @@ func MoveData(db *sql.DB, globalConfig *config.ImportConfig, queryConf config.Qu
 				}
 			},
 		}
-		addDocumentId(&queryConf, document, &bulkItem)
+		addDocumentId(&mover.queryConf, document, &bulkItem)
 
 		err = elasticBulk.Add(context.Background(), bulkItem)
 		if err != nil {
