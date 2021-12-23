@@ -18,7 +18,7 @@ type insertIntegrationTest struct{}
 func (*insertIntegrationTest) ReadConfig() ([]byte, error) {
 
 	testComplexConfig := `
-pollingSeconds: 5
+pollingSeconds: 1
 database: "postgres://user:pwd@localhost:5432/postgres?sslmode=disable"
 queries:
   - query: "select * from test.table1 where last_update > $1"

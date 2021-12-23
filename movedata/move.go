@@ -62,7 +62,7 @@ func (mover *Mover) MoveData() error {
 	}
 	defer elasticBulk.Close(context.Background())
 
-	log.Print("going to execute query ", mover.queryConf.Query)
+	log.Printf("going to execute query %s whit param %s", mover.queryConf.Query, lastDate)
 	rows, err := mover.db.Query(mover.queryConf.Query, lastDate)
 	if err != nil {
 		return err

@@ -2,6 +2,7 @@ package test_util
 
 import (
 	"reflect"
+	"runtime/debug"
 	"testing"
 )
 
@@ -11,6 +12,7 @@ func AssertEqual(t *testing.T, found, expected interface{}) {
 		return
 	}
 	// debug.PrintStack()
+	t.Errorf(string(debug.Stack()))
 	t.Errorf("Received %v (type %v), expected %v (type %v)", found, reflect.TypeOf(found), expected, reflect.TypeOf(expected))
 	t.FailNow()
 }
