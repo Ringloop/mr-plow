@@ -11,11 +11,15 @@ import (
 	"time"
 )
 
+var Done = make(chan os.Signal)
+
+func init() {
+	signal.Notify(Done, os.Interrupt, syscall.SIGTERM)
+}
+
 func MoveDataUntilExit(conf *config.ImportConfig, db *sql.DB, query *config.QueryModel) {
 	ticker := time.NewTicker(time.Duration(conf.PollingSeconds * 1000000000))
 	defer ticker.Stop()
-	done := make(chan os.Signal)
-	signal.Notify(done, os.Interrupt, syscall.SIGTERM)
 
 	mover := movedata.New(db, conf, query)
 	for {
@@ -25,7 +29,7 @@ func MoveDataUntilExit(conf *config.ImportConfig, db *sql.DB, query *config.Quer
 			if moveErr != nil {
 				log.Fatal("error executing query", moveErr)
 			}
-		case <-done:
+		case <-Done:
 			log.Println("stopping query execution, bye...")
 			return
 		}

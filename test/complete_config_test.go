@@ -14,6 +14,7 @@ type readerCompleteTest struct{}
 func (*readerCompleteTest) ReadConfig() ([]byte, error) {
 
 	testCompleteConfig := `
+pollingSeconds: 5
 database: databaseValue
 queries:
   - index: index_1

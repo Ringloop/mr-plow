@@ -14,6 +14,7 @@ type readerComplexTest struct{}
 func (*readerComplexTest) ReadConfig() ([]byte, error) {
 
 	testComplexConfig := `
+pollingSeconds: 5
 database: "databaseValue"
 queries:
   - query: "query_0_Value"
