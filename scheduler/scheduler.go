@@ -2,8 +2,8 @@ package scheduler
 
 import (
 	"database/sql"
-	"github.com/Ringloop/Mr-Plow/config"
-	"github.com/Ringloop/Mr-Plow/movedata"
+	"github.com/Ringloop/mr-plow/config"
+	"github.com/Ringloop/mr-plow/movedata"
 	"log"
 	"os"
 	"os/signal"

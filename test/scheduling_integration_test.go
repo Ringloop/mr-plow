@@ -2,12 +2,12 @@ package test
 
 import (
 	"encoding/json"
-	"github.com/Ringloop/Mr-Plow/scheduler"
+	"github.com/Ringloop/mr-plow/scheduler"
 	"testing"
 	"time"
 
-	"github.com/Ringloop/Mr-Plow/elastic"
-	"github.com/Ringloop/Mr-Plow/test_util"
+	"github.com/Ringloop/mr-plow/elastic"
+	"github.com/Ringloop/mr-plow/test_util"
 	_ "github.com/lib/pq"
 )
 

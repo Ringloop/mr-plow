@@ -29,7 +29,7 @@ type ElasticConfig struct {
 	User       string `yaml:"user"`
 	Password   string `yaml:"password"`
 	CaCertPath string `yaml:"caCertPath"`
-	NumWorker  int    `yaml:"NumWorker"`
+	NumWorker  int    `yaml:"numWorker"`
 }
 
 type ImportConfig struct {

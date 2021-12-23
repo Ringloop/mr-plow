@@ -3,9 +3,9 @@ package test
 import (
 	"testing"
 
-	"github.com/Ringloop/Mr-Plow/test_util"
+	"github.com/Ringloop/mr-plow/test_util"
 
-	"github.com/Ringloop/Mr-Plow/config"
+	"github.com/Ringloop/mr-plow/config"
 )
 
 type readerCompleteTest struct{}

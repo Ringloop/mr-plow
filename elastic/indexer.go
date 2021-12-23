@@ -5,7 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/Ringloop/Mr-Plow/config"
+	"github.com/Ringloop/mr-plow/config"
 	"io"
 	"io/ioutil"
 	"log"

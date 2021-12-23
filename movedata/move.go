@@ -9,8 +9,8 @@ import (
 	"log"
 	"time"
 
-	"github.com/Ringloop/Mr-Plow/config"
-	"github.com/Ringloop/Mr-Plow/elastic"
+	"github.com/Ringloop/mr-plow/config"
+	"github.com/Ringloop/mr-plow/elastic"
 
 	"github.com/elastic/go-elasticsearch/v7/esutil"
 	_ "github.com/lib/pq"
