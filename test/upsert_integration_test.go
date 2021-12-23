@@ -5,9 +5,9 @@ import (
 	"log"
 	"testing"
 
-	"dariobalinzo.com/elastic/v2/elastic"
-	"dariobalinzo.com/elastic/v2/movedata"
-	"dariobalinzo.com/elastic/v2/test_util"
+	"github.com/Ringloop/Mr-Plow/elastic"
+	"github.com/Ringloop/Mr-Plow/movedata"
+	"github.com/Ringloop/Mr-Plow/test_util"
 	_ "github.com/lib/pq"
 )
 
@@ -51,7 +51,7 @@ func TestUpsertIntegration(t *testing.T) {
 	}
 
 	//when (moving data to elastic)
-	mover := movedata.New(db, conf, conf.Queries[0])
+	mover := movedata.New(db, conf, &conf.Queries[0])
 	err = mover.MoveData()
 	if err != nil {
 		t.Error("error data moving", err)

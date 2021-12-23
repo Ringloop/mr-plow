@@ -8,8 +8,8 @@ import (
 	"fmt"
 	"log"
 
-	"dariobalinzo.com/elastic/v2/config"
-	"dariobalinzo.com/elastic/v2/elastic"
+	"github.com/Ringloop/Mr-Plow/config"
+	"github.com/Ringloop/Mr-Plow/elastic"
 
 	"github.com/elastic/go-elasticsearch/v7/esutil"
 	_ "github.com/lib/pq"
@@ -18,11 +18,11 @@ import (
 type Mover struct {
 	db           *sql.DB
 	globalConfig *config.ImportConfig
-	queryConf    config.QueryModel
+	queryConf    *config.QueryModel
 	canExec      chan bool
 }
 
-func New(db *sql.DB, globalConfig *config.ImportConfig, queryConf config.QueryModel) *Mover {
+func New(db *sql.DB, globalConfig *config.ImportConfig, queryConf *config.QueryModel) *Mover {
 	mover := &Mover{db, globalConfig, queryConf, make(chan bool, 1)}
 	mover.canExec <- true
 	return mover
@@ -110,7 +110,7 @@ func (mover *Mover) MoveData() error {
 				}
 			},
 		}
-		addDocumentId(&mover.queryConf, document, &bulkItem)
+		addDocumentId(mover.queryConf, document, &bulkItem)
 
 		err = elasticBulk.Add(context.Background(), bulkItem)
 		if err != nil {

@@ -3,9 +3,9 @@ package test
 import (
 	"testing"
 
-	"dariobalinzo.com/elastic/v2/test_util"
+	"github.com/Ringloop/Mr-Plow/test_util"
 
-	"dariobalinzo.com/elastic/v2/config"
+	"github.com/Ringloop/Mr-Plow/config"
 )
 
 type readerCompleteTest struct{}

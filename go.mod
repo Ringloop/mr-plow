@@ -1,4 +1,4 @@
-module dariobalinzo.com/elastic/v2
+module github.com/Ringloop/Mr-Plow
 
 go 1.17
 

@@ -33,9 +33,10 @@ type ElasticConfig struct {
 }
 
 type ImportConfig struct {
-	Database string        `yaml:"database"`
-	Queries  []QueryModel  `yaml:"queries"`
-	Elastic  ElasticConfig `yaml:"elastic"`
+	PollingSeconds int           `yaml:"pollingSeconds"`
+	Database       string        `yaml:"database"`
+	Queries        []QueryModel  `yaml:"queries"`
+	Elastic        ElasticConfig `yaml:"elastic"`
 }
 
 func ParseConfiguration(reader IReader) (*ImportConfig, error) {
