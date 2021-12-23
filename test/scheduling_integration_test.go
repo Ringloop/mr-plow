@@ -26,7 +26,8 @@ func TestSchedulingIntegration(t *testing.T) {
 	insertData(db, "mario@rossi.it", t)
 
 	//when (starting the scheduler)
-	go scheduler.MoveDataUntilExit(conf, db, &conf.Queries[0])
+	finished := make(chan bool)
+	go scheduler.MoveDataUntilExit(conf, db, &conf.Queries[0], finished)
 	time.Sleep(2 * time.Second)
 
 	indexContent1, err := repo.FindIndexContent("out_index", "last_update")
@@ -87,5 +88,6 @@ func TestSchedulingIntegration(t *testing.T) {
 		t.FailNow()
 	}
 
+	test_util.AssertEqual(t, <-finished, true)
 	test_util.AssertEqual(t, len(response3.Hits.Hits), len(response2.Hits.Hits))
 }
