@@ -2,16 +2,20 @@ package main
 
 import (
 	"database/sql"
+	"flag"
+	"github.com/Ringloop/mr-plow/scheduler"
 	"log"
 
-	"dariobalinzo.com/elastic/v2/config"
-	"dariobalinzo.com/elastic/v2/movedata"
-
+	"github.com/Ringloop/mr-plow/config"
+	_ "github.com/go-sql-driver/mysql"
 	_ "github.com/lib/pq"
 )
 
 func main() {
-	ymlConfReader := config.Reader{FileName: "config.yml"} //TODO parse commandline yml path, now assuming is in current dir
+	configPath := flag.String("config", "./config.yml", "path of the configuration file")
+	flag.Parse()
+
+	ymlConfReader := config.Reader{FileName: *configPath}
 	conf, err := config.ParseConfiguration(&ymlConfReader)
 	if err != nil {
 		log.Fatal("Cannot parse config file", err)
@@ -22,20 +26,23 @@ func main() {
 func ConnectAndStart(conf *config.ImportConfig) {
 	db, err := sql.Open("postgres", conf.Database)
 	if err != nil {
-		log.Fatal("Failed to open a DB connection: ", err)
+		log.Printf("Failed to open a DB connection: %s", err)
+		return
 	}
-	defer db.Close()
+	defer func(db *sql.DB) {
+		err := db.Close()
+		if err != nil {
+			log.Printf("error in closing postgres connection: %s", err)
+		}
+	}(db)
+	log.Println("Connected to postgres")
 
-	log.Println("Connected to postgres", err)
-
+	finished := make(chan bool)
 	for _, c := range conf.Queries {
-		go func(c config.QueryModel) {
-			moveErr := movedata.MoveData(db, c)
-			if moveErr != nil {
-				log.Fatal("error execurting query", err)
-			}
-		}(c)
-
+		go scheduler.MoveDataUntilExit(conf, db, &c, finished)
 	}
 
+	for i := 0; i < len(conf.Queries); i++ {
+		<-finished
+	}
 }

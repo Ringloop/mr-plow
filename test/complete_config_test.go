@@ -3,9 +3,9 @@ package test
 import (
 	"testing"
 
-	"dariobalinzo.com/elastic/v2/test_util"
+	"github.com/Ringloop/mr-plow/test_util"
 
-	"dariobalinzo.com/elastic/v2/config"
+	"github.com/Ringloop/mr-plow/config"
 )
 
 type readerCompleteTest struct{}
@@ -14,6 +14,7 @@ type readerCompleteTest struct{}
 func (*readerCompleteTest) ReadConfig() ([]byte, error) {
 
 	testCompleteConfig := `
+pollingSeconds: 5
 database: databaseValue
 queries:
   - index: index_1
@@ -23,6 +24,7 @@ queries:
         type: String
       - name: last_update
         type: Date
+    updateDate: test01
     JSONFields:
       - fieldName: dataField_1
         attributes:
@@ -36,12 +38,14 @@ queries:
             attributeType: attribute_2_1_Type
   - index: index_2
     query: select * from table_2
-
+    updateDate: test02
     JSONFields:
       - fieldName: dataField_2
         attributes:
-          - attributeName: attribute_1_Name_2
-            attributeType: attribute_1_Type_2
+          attributeName: attribute_1_Name_2
+          attributeType: attribute_1_Type_2
+elastic:
+  url: http://localhost:9200
 `
 
 	// Prepare data you want to return without reading from the file

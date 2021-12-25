@@ -5,6 +5,9 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/Ringloop/mr-plow/config"
+	"io"
+	"io/ioutil"
 	"log"
 	"strings"
 	"time"
@@ -14,17 +17,57 @@ import (
 	"github.com/elastic/go-elasticsearch/v7/esutil"
 )
 
-var es *elasticsearch.Client
+type Repository struct {
+	es            *elasticsearch.Client
+	numWorkers    int
+	flushBytes    int
+	flushInterval time.Duration
+}
 
-func init() {
-	var err error
-	es, err = elasticsearch.NewDefaultClient()
-	if err != nil {
-		log.Fatalf("Error creating the client: %s", err)
+func NewDefaultClient() (*Repository, error) {
+	if es, err := elasticsearch.NewDefaultClient(); err != nil {
+		return &Repository{}, err
+	} else {
+		return &Repository{
+			es:            es,
+			numWorkers:    1,
+			flushBytes:    100000,
+			flushInterval: 30 * time.Second}, nil
 	}
 }
 
-func Index(index string, document map[string]interface{}) error {
+func NewClient(config *config.ImportConfig) (*Repository, error) {
+	cfg := elasticsearch.Config{
+		Addresses: []string{
+			config.Elastic.Url,
+		},
+	}
+
+	if config.Elastic.User != "" {
+		cfg.Username = config.Elastic.User
+		cfg.Password = config.Elastic.Password
+	}
+
+	if config.Elastic.CaCertPath != "" {
+		cert, err := ioutil.ReadFile(config.Elastic.CaCertPath)
+		if err != nil {
+			return nil, err
+		}
+		cfg.CACert = cert
+	}
+
+	if es, err := elasticsearch.NewClient(cfg); err != nil {
+		return &Repository{}, err
+	} else {
+		return &Repository{
+			es:            es,
+			numWorkers:    config.Elastic.NumWorker,
+			flushBytes:    100000,
+			flushInterval: 30 * time.Second}, nil
+	}
+}
+
+func (repo *Repository) Index(index string, document map[string]interface{}) error {
 	jsonBytes, err := json.Marshal(document)
 	if err != nil {
 		return nil
@@ -35,7 +78,7 @@ func Index(index string, document map[string]interface{}) error {
 		Body: bytes.NewReader(jsonBytes),
 	}
 
-	res, err := req.Do(context.Background(), es)
+	res, err := req.Do(context.Background(), repo.es)
 	if err != nil {
 		return err
 	}
@@ -47,13 +90,13 @@ func Index(index string, document map[string]interface{}) error {
 	return nil
 }
 
-func GetBulkIndexer(index string) (esutil.BulkIndexer, error) {
+func (repo *Repository) GetBulkIndexer(index string) (esutil.BulkIndexer, error) {
 	bi, err := esutil.NewBulkIndexer(esutil.BulkIndexerConfig{
 		Index:         index,
-		Client:        es,
-		NumWorkers:    10,               //todo config
-		FlushBytes:    100000,           //todo config
-		FlushInterval: 30 * time.Second, // todoconfig
+		Client:        repo.es,
+		NumWorkers:    repo.numWorkers,
+		FlushBytes:    repo.flushBytes,
+		FlushInterval: repo.flushInterval,
 	})
 	if err != nil {
 		return nil, fmt.Errorf("error getting bulkIndexer: %s", err)
@@ -61,13 +104,14 @@ func GetBulkIndexer(index string) (esutil.BulkIndexer, error) {
 	return bi, nil
 }
 
-func FindLastUpdateOrEpochDate(index string) (*time.Time, error) {
-	lastDate, err := FindLastUpdate(index)
+func (repo *Repository) FindLastUpdateOrEpochDate(index, sortingField string) (*time.Time, error) {
+	lastDate, err := repo.FindLastUpdate(index, sortingField)
 	if err != nil {
 		return nil, err
 	}
 
 	if lastDate == nil {
+		log.Printf("cannot found old values for %s", sortingField)
 		var defaultDate time.Time
 		defaultDate, err = time.Parse(time.RFC3339, "1970-01-01T00:00:00+00:00")
 		lastDate = &defaultDate
@@ -76,8 +120,8 @@ func FindLastUpdateOrEpochDate(index string) (*time.Time, error) {
 	return lastDate, err
 }
 
-func FindLastUpdate(index string) (*time.Time, error) {
-	err := Refresh(index)
+func (repo *Repository) FindLastUpdate(index, sortingField string) (*time.Time, error) {
+	err := repo.Refresh(index)
 	if err != nil {
 		return nil, err
 	}
@@ -85,24 +129,25 @@ func FindLastUpdate(index string) (*time.Time, error) {
 	{
 		"sort": [
 		  {
-			"last_update": {
+			"$order": {
 			  "order": "desc"
 			}
 		  }
 		],
 		"size": 1,
 		"_source": [
-		  "last_update"
+		  "$order"
 		  ]
 	}
 	`
+	query = replaceOrderByField(query, sortingField)
 
 	var mapResp map[string]interface{}
 
-	res, err := es.Search(
-		es.Search.WithContext(context.Background()),
-		es.Search.WithIndex(index),
-		es.Search.WithBody(strings.NewReader(query)),
+	res, err := repo.es.Search(
+		repo.es.Search.WithContext(context.Background()),
+		repo.es.Search.WithIndex(index),
+		repo.es.Search.WithBody(strings.NewReader(query)),
 	)
 
 	if err != nil {
@@ -125,8 +170,8 @@ func FindLastUpdate(index string) (*time.Time, error) {
 		}
 
 		data := hitsList[0].(map[string]interface{})["_source"].(map[string]interface{})
-		last_update := data["last_update"].(string)
-		fmt.Println("data:", last_update)
+		last_update := data[sortingField].(string)
+		log.Println("found old data:", last_update)
 
 		parsed_last_date, err := time.Parse(time.RFC3339, last_update)
 		return &parsed_last_date, err
@@ -135,15 +180,52 @@ func FindLastUpdate(index string) (*time.Time, error) {
 
 }
 
-func Refresh(index string) error {
+func (repo *Repository) FindIndexContent(index, sortingField string) (*io.ReadCloser, error) {
+	err := repo.Refresh(index)
+	if err != nil {
+		return nil, err
+	}
+	var query = `
+	{
+		"sort": [
+		  {
+			"$order": {
+			  "order": "desc"
+			}
+		  }
+		],
+		"size": 1000
+	}
+	`
+	query = replaceOrderByField(query, sortingField)
+
+	res, err := repo.es.Search(
+		repo.es.Search.WithContext(context.Background()),
+		repo.es.Search.WithIndex(index),
+		repo.es.Search.WithBody(strings.NewReader(query)),
+	)
+
+	if err != nil {
+		return nil, err
+	} else {
+		return &res.Body, nil
+	}
+}
+
+func replaceOrderByField(query, sortingField string) string {
+	query = strings.Replace(query, "$order", sortingField, 2)
+	return query
+}
+
+func (repo *Repository) Refresh(index string) error {
 	r := esapi.IndicesRefreshRequest{
 		Index: []string{index},
 	}
-	_, err := r.Do(context.Background(), es)
+	_, err := r.Do(context.Background(), repo.es)
 	return err
 }
 
-func Delete(index string) error {
-	_, err := es.Indices.Delete([]string{index})
+func (repo *Repository) Delete(index string) error {
+	_, err := repo.es.Indices.Delete([]string{index})
 	return err
 }
