@@ -6,9 +6,9 @@ import (
 	"log"
 	"testing"
 
-	"dariobalinzo.com/elastic/v2/config"
-	"dariobalinzo.com/elastic/v2/elastic"
-	"dariobalinzo.com/elastic/v2/movedata"
+	"github.com/Ringloop/mr-plow/config"
+	"github.com/Ringloop/mr-plow/elastic"
+	"github.com/Ringloop/mr-plow/movedata"
 	_ "github.com/lib/pq"
 )
 
@@ -47,7 +47,13 @@ func TestIntegrationWithJSON(t *testing.T) {
 	conf := initConfigIntegrationTestWithJson(t)
 	db := initSqlDB_local(t, conf)
 	defer db.Close()
-	elastic.Delete(conf.Queries[0].Index)
+
+	repo, err := elastic.NewDefaultClient()
+	if err != nil {
+		t.Error("error in creating elastic connection", err)
+		t.FailNow()
+	}
+	repo.Delete(conf.Queries[0].Index)
 
 	email := "mario@rossi.it"
 	json := `
@@ -58,21 +64,22 @@ func TestIntegrationWithJSON(t *testing.T) {
     "float_col": 48.94065780742467
 }`
 	insertDataWithJSON(db, email, json, t)
-	originalLastDate, err := elastic.FindLastUpdateOrEpochDate(conf.Queries[0].Index)
+	originalLastDate, err := repo.FindLastUpdateOrEpochDate(conf.Queries[0].Index, conf.Queries[0].UpdateDate)
 	if err != nil {
 		t.Error("error in getting last date", err)
 		t.FailNow()
 	}
 
 	//when (moving data to elastic)
-	err = movedata.MoveData(db, conf.Queries[0])
+	mover := movedata.New(db, conf, &conf.Queries[0])
+	err = mover.MoveData()
 	if err != nil {
 		t.Error("error data moving", err)
 		t.FailNow()
 	}
 
 	//then (last date on elastic should be updated)
-	lastImportedDate, err := elastic.FindLastUpdateOrEpochDate(conf.Queries[0].Index)
+	lastImportedDate, err := repo.FindLastUpdateOrEpochDate(conf.Queries[0].Index, conf.Queries[0].UpdateDate)
 	if err != nil {
 		t.Error("error in getting last date", err)
 		t.FailNow()
@@ -94,21 +101,25 @@ type readerIntegrationTestWithJson struct{}
 func (*readerIntegrationTestWithJson) ReadConfig() ([]byte, error) {
 
 	configIntegrationWithJson := `
+pollingSeconds: 5
 database: "postgres://user:pwd@localhost:5432/postgres?sslmode=disable"
 queries:
   - index: "out_index"
     query: "select * from test.table1 where last_update > $1" 
+    updateDate: "last_update"
     JSONFields:
       - fieldName: additional_info
-        attributes:
-          - attributeName: str_col
-            attributeType: string
-          - attributeName: int_col
-            attributeType: integer
-          - attributeName: bool_col
-            attributeType: boolean
-          - attributeName: float_col
-            attributeType: float
+        fields:
+          - name: str_col
+            type: string
+          - name: int_col
+            type: integer
+          - name: bool_col
+            type: boolean
+          - name: float_col
+            type: float
+elastic:
+  url: http://localhost:9200
 `
 
 	// Prepare data you want to return without reading from the file
