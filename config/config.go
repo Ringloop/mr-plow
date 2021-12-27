@@ -8,9 +8,9 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
-type JSONFields []struct {
+type JSONFields struct {
 	FieldName  string `yaml:"fieldName"`
-	Attributes struct {
+	Attributes []struct {
 		AttributeName string `yaml:"attributeName"`
 		AttributeType string `yaml:"attributeType"`
 	} `yaml:"attributes"`
@@ -24,14 +24,8 @@ type QueryModel struct {
 		Name string `yaml:"name"`
 		Type string `yaml:"type"`
 	} `yaml:"fields"`
-	JSONFields []struct {
-		FieldName  string `yaml:"fieldName"`
-		Attributes []struct {
-			AttributeName string `yaml:"attributeName"`
-			AttributeType string `yaml:"attributeType"`
-		} `yaml:"attributes"`
-	} `yaml:"JSONFields"`
-	Id string `yaml:"id"`
+	JSONFields []JSONFields `yaml:"JSONFields"`
+	Id         string       `yaml:"id"`
 }
 
 type ElasticConfig struct {
@@ -112,7 +106,7 @@ func validateQueriesConfig(importConfiguration *ImportConfig) error {
 	return nil
 }
 
-func validateJsonFields(_ JSONFields, _ int) error {
+func validateJsonFields(_ []JSONFields, _ int) error {
 	//TODO
 	return nil
 }

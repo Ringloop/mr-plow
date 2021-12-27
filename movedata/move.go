@@ -73,7 +73,7 @@ func (mover *Mover) MoveData() error {
 	}
 
 	columnsMap := make(map[string]string)
-	for _, colConfig := range c.Fields {
+	for _, colConfig := range mover.queryConf.Fields {
 		columnsMap[colConfig.Name] = colConfig.Type
 	}
 
@@ -102,7 +102,7 @@ func (mover *Mover) MoveData() error {
 			document[colName] = *val //qui ci andrà messo il tipo convertito
 		}
 
-		for _, jsonfield := range c.JSONFields {
+		for _, jsonfield := range mover.queryConf.JSONFields {
 			//TODO: check if jsonField is a json itself
 
 			//TODO: Build the json structure
