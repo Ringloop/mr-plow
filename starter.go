@@ -39,7 +39,8 @@ func ConnectAndStart(conf *config.ImportConfig) {
 
 	finished := make(chan bool)
 	for _, c := range conf.Queries {
-		go scheduler.MoveDataUntilExit(conf, db, &c, finished)
+		s := scheduler.NewScheduler()
+		go s.MoveDataUntilExit(conf, db, &c, finished)
 	}
 
 	for i := 0; i < len(conf.Queries); i++ {
