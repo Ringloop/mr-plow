@@ -1,7 +1,6 @@
 package elastic
 
 import (
-	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -65,29 +64,6 @@ func NewClient(config *config.ImportConfig) (*Repository, error) {
 			flushBytes:    100000,
 			flushInterval: 30 * time.Second}, nil
 	}
-}
-
-func (repo *Repository) Index(index string, document map[string]interface{}) error {
-	jsonBytes, err := json.Marshal(document)
-	if err != nil {
-		return nil
-	}
-	req := esapi.IndexRequest{
-		Index: index,
-		//DocumentID: strconv.Itoa(i + 1),
-		Body: bytes.NewReader(jsonBytes),
-	}
-
-	res, err := req.Do(context.Background(), repo.es)
-	if err != nil {
-		return err
-	}
-	defer res.Body.Close()
-
-	if res.IsError() {
-		log.Printf("[%s] Error indexing", res.Status())
-	}
-	return nil
 }
 
 func (repo *Repository) GetBulkIndexer(index string) (esutil.BulkIndexer, error) {
