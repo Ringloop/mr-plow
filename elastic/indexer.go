@@ -4,12 +4,13 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/Ringloop/mr-plow/config"
 	"io"
 	"io/ioutil"
 	"log"
 	"strings"
 	"time"
+
+	"github.com/Ringloop/mr-plow/config"
 
 	"github.com/elastic/go-elasticsearch/v7"
 	"github.com/elastic/go-elasticsearch/v7/esapi"
@@ -87,7 +88,7 @@ func (repo *Repository) FindLastUpdateOrEpochDate(index, sortingField string) (*
 	}
 
 	if lastDate == nil {
-		log.Printf("cannot found old values for %s", sortingField)
+		log.Printf("cannot find old values for %s", sortingField)
 		var defaultDate time.Time
 		defaultDate, err = time.Parse(time.RFC3339, "1970-01-01T00:00:00+00:00")
 		lastDate = &defaultDate
