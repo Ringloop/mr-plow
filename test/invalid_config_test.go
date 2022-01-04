@@ -8,10 +8,8 @@ import (
 
 type invalidConf1 struct{}
 
-// 'readerTest' implementing the Interface
 func (*invalidConf1) ReadConfig() ([]byte, error) {
-
-	testComplexConfig := `
+	yml := `
 #pollingSeconds: 5 missing polling...
 database: "databaseValue"
 queries:
@@ -24,16 +22,79 @@ queries:
 elastic:
   url: http://localhost:9200
 `
+	return []byte(yml), nil
+}
 
-	// Prepare data you want to return without reading from the file
-	return []byte(testComplexConfig), nil
+type invalidConf2 struct{}
+
+func (*invalidConf2) ReadConfig() ([]byte, error) {
+	yml := `
+pollingSeconds: 5
+#database: "databaseValue" missing db...
+queries:
+  - query: "query_0_Value"
+    index: "index_0_Value"
+    updateDate: "test0"
+  - query: "query_1_Value"
+    index: "index_1_Value"
+    updateDate: "test1"
+elastic:
+  url: http://localhost:9200
+`
+	return []byte(yml), nil
+}
+
+type invalidConf3 struct{}
+
+func (*invalidConf3) ReadConfig() ([]byte, error) {
+	yml := `
+pollingSeconds: 5
+database: "databaseValue"
+elastic:
+  url: http://localhost:9200
+`
+	return []byte(yml), nil
+}
+
+type invalidConf4 struct{}
+
+func (*invalidConf4) ReadConfig() ([]byte, error) {
+	yml := `
+pollingSeconds: 5
+#database: "databaseValue" missing db...
+queries:
+  - query: "query_0_Value"
+    index: "index_0_Value"
+    updateDate: "test0"
+  - query: "query_1_Value"
+    index: "index_1_Value"
+    updateDate: "test1"
+`
+	return []byte(yml), nil
 }
 
 func TestInvalidConfig(t *testing.T) {
-	testReader := invalidConf1{}
-	_, err := config.ParseConfiguration(&testReader)
+	_, err := config.ParseConfiguration(&invalidConf1{})
 	if err == nil {
 		t.Errorf("Invalid config without polling returned succes")
+		t.Fail()
+	}
+
+	_, err = config.ParseConfiguration(&invalidConf2{})
+	if err == nil {
+		t.Errorf("Invalid config without database returned succes")
+		t.Fail()
+	}
+
+	_, err = config.ParseConfiguration(&invalidConf3{})
+	if err == nil {
+		t.Errorf("Invalid config without queries returned succes")
+		t.Fail()
+	}
+
+	_, err = config.ParseConfiguration(&invalidConf4{})
+	if err == nil {
+		t.Errorf("Invalid config without elastic url returned succes")
 		t.Fail()
 	}
 
