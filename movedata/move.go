@@ -9,6 +9,7 @@ import (
 	"log"
 	"time"
 
+	"github.com/Ringloop/mr-plow/casting"
 	"github.com/Ringloop/mr-plow/config"
 	"github.com/Ringloop/mr-plow/elastic"
 
@@ -62,7 +63,12 @@ func (mover *Mover) MoveData() error {
 	}
 	defer elasticBulk.Close(context.Background())
 
-	log.Printf("going to execute query %s whit param %s", mover.queryConf.Query, lastDate)
+	columnsMap := make(map[string]string)
+	for _, colConfig := range mover.queryConf.Fields {
+		columnsMap[colConfig.Name] = colConfig.Type
+	}
+
+	log.Printf("going to execute query %s with param %s", mover.queryConf.Query, lastDate)
 	rows, err := mover.db.Query(mover.queryConf.Query, lastDate)
 	if err != nil {
 		return err
@@ -72,34 +78,27 @@ func (mover *Mover) MoveData() error {
 		return err
 	}
 
-	columnsMap := make(map[string]string)
-	for _, colConfig := range mover.queryConf.Fields {
-		columnsMap[colConfig.Name] = colConfig.Type
-	}
-
 	for rows.Next() {
 		columns := make([]interface{}, len(cols))
 		columnPointers := make([]interface{}, len(cols))
+
 		for i := range columns {
-
 			columnPointers[i] = &columns[i]
-
-			//HERE:
-			// per ogni ColumnPointers[i] devo fare la validazione del tipo. Se il target è intero, chiama la funzione giusta
-
 		}
 
 		if err := rows.Scan(columnPointers...); err != nil {
 			return err
 		}
 
+		convertedArrayOfData := casting.CastArrayOfData(columnsMap, cols, columns)
+		for i := range columns {
+			columnPointers[i] = &convertedArrayOfData[i]
+		}
+
 		document := make(map[string]interface{})
 		for i, colName := range cols {
 			val := columnPointers[i].(*interface{})
-
-			//Qua va fatta la stessa cosa di sopra agendo su VAL
-
-			document[colName] = *val //qui ci andrà messo il tipo convertito
+			document[colName] = *val
 		}
 
 		for _, jsonfield := range mover.queryConf.JSONFields {
@@ -165,7 +164,7 @@ func (mover *Mover) getLastDate(repo *elastic.Repository) (*time.Time, error) {
 func (mover *Mover) updateLastUpdate(conf *config.QueryModel, document map[string]interface{}) error {
 	date, ok := document[conf.UpdateDate]
 	if !ok {
-		return fmt.Errorf("cannot found %s in results set of %s", conf.UpdateDate, conf.Query)
+		return fmt.Errorf("cannot find %s in results set of %s", conf.UpdateDate, conf.Query)
 	}
 	dateParsed, ok := date.(time.Time)
 	if !ok {

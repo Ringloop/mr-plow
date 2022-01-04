@@ -1,17 +1,37 @@
 package casting
 
 import (
-	"fmt"
 	"reflect"
 	"strconv"
 	"strings"
 )
 
-func CastStringWithPrintf(input_variable interface{}) string {
-	return fmt.Sprintf("%s", input_variable)
+func CastArrayOfData(inputTypeMap map[string]string, inputNameArray []string, inputDataArray []interface{}) []interface{} {
+	castedColumns := make([]interface{}, len(inputDataArray))
+
+	for i := range inputDataArray {
+		if column_type, ok := inputTypeMap[inputNameArray[i]]; ok {
+			switch strings.ToLower(column_type) {
+			case "string":
+				castedColumns[i] = castToString(inputDataArray[i])
+			case "integer":
+				castedColumns[i] = castToInt(inputDataArray[i])
+			case "float":
+				castedColumns[i] = castToFloat(inputDataArray[i])
+			case "boolean":
+				castedColumns[i] = castToBool(inputDataArray[i])
+			default:
+				castedColumns[i] = inputDataArray[i]
+			}
+		} else {
+			castedColumns[i] = inputDataArray[i]
+		}
+	}
+
+	return castedColumns
 }
 
-func CastToString(inputVar interface{}) string {
+func castToString(inputVar interface{}) string {
 	switch varType := reflect.TypeOf(inputVar).String(); varType {
 	case "bool":
 		return strconv.FormatBool(inputVar.(bool))
@@ -23,10 +43,10 @@ func CastToString(inputVar interface{}) string {
 	return inputVar.(string)
 }
 
-func CastToInt(inputVar interface{}) int {
+func castToInt(inputVar interface{}) int64 {
 	switch varType := reflect.TypeOf(inputVar).String(); varType {
 	case "string":
-		res, error := strconv.Atoi(inputVar.(string)) //have to manage this error
+		res, error := strconv.ParseInt(inputVar.(string), 10, 64) //have to manage this error
 		if error == nil {
 			return res
 		}
@@ -37,12 +57,12 @@ func CastToInt(inputVar interface{}) int {
 			return 0
 		}
 	case "float64":
-		return int(inputVar.(float64))
+		return int64(inputVar.(float64))
 	}
-	return inputVar.(int)
+	return inputVar.(int64)
 }
 
-func CastToFloat(inputVar interface{}) float64 {
+func castToFloat(inputVar interface{}) float64 {
 	switch varType := reflect.TypeOf(inputVar).String(); varType {
 	case "string":
 		res, error := strconv.ParseFloat(inputVar.(string), 64) //have to manage this error
@@ -61,7 +81,7 @@ func CastToFloat(inputVar interface{}) float64 {
 	return inputVar.(float64)
 }
 
-func CastToBool(inputVar interface{}) bool {
+func castToBool(inputVar interface{}) bool {
 	switch varType := reflect.TypeOf(inputVar).String(); varType {
 	case "string":
 		if strings.EqualFold("true", inputVar.(string)) {
