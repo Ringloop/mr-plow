@@ -46,8 +46,8 @@ func castToString(inputVar interface{}) string {
 func castToInt(inputVar interface{}) int64 {
 	switch varType := reflect.TypeOf(inputVar).String(); varType {
 	case "string":
-		res, error := strconv.ParseInt(inputVar.(string), 10, 64) //have to manage this error
-		if error == nil {
+		res, err := strconv.ParseInt(inputVar.(string), 10, 64) //have to manage this error
+		if err == nil {
 			return res
 		}
 	case "bool":
@@ -65,8 +65,8 @@ func castToInt(inputVar interface{}) int64 {
 func castToFloat(inputVar interface{}) float64 {
 	switch varType := reflect.TypeOf(inputVar).String(); varType {
 	case "string":
-		res, error := strconv.ParseFloat(inputVar.(string), 64) //have to manage this error
-		if error == nil {
+		res, err := strconv.ParseFloat(inputVar.(string), 64) //have to manage this error
+		if err == nil {
 			return res
 		}
 	case "bool":
