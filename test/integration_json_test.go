@@ -136,7 +136,7 @@ func initConfigIntegrationTestWithJson(t *testing.T) *config.ImportConfig {
 	return conf
 }
 
-func insertDataWithJSON(db *sql.DB, email string, json string, t *testing.T) {
+func insertDataWithJSON(db *sql.DB, email, json string, t *testing.T) {
 	sql_statement := fmt.Sprintf(`
 	INSERT INTO test.table1 (email, additional_info, last_update)
 	VALUES ('%s', '%s', now());	
