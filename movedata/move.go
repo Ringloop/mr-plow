@@ -63,9 +63,19 @@ func (mover *Mover) MoveData() error {
 	}
 	defer elasticBulk.Close(context.Background())
 
+	//create the map for the native fields of the query
 	columnsMap := make(map[string]string)
 	for _, colConfig := range mover.queryConf.Fields {
 		columnsMap[colConfig.Name] = colConfig.Type
+	}
+
+	//create a nested map for the JSON fields (any JSON contains a set of fields)
+	var jsonColsMap = map[string]map[string]string{}
+	for _, jsonColConfig := range mover.queryConf.JSONFields {
+		for _, colConfig := range jsonColConfig.Fields {
+			jsonColsMap[jsonColConfig.FieldName] = make(map[string]string)
+			jsonColsMap[jsonColConfig.FieldName][colConfig.Name] = colConfig.Type
+		}
 	}
 
 	log.Printf("going to execute query %s with param %s", mover.queryConf.Query, lastDate)
@@ -102,19 +112,18 @@ func (mover *Mover) MoveData() error {
 		}
 
 		for _, jsonfield := range mover.queryConf.JSONFields {
-			//TODO: check if jsonField is a json itself
-
 			//TODO: Build the json structure
 			var jsonData map[string]interface{}
 
-			//TODO: Throw an error if the fieldName cannot be found
 			byteData := document[jsonfield.FieldName].([]byte)
-			//TODO consider also the field types in parsing
 			err := json.Unmarshal(byteData, &jsonData)
 			if err != nil {
 				return err
 			}
-			document[jsonfield.FieldName] = jsonData
+			for _, field := range jsonfield.Fields {
+				document[field.Name] = casting.CastSingleElement(jsonColsMap[jsonfield.FieldName], field.Name, jsonData[field.Name])
+			}
+
 		}
 
 		documentToSend, err := json.Marshal(document)
