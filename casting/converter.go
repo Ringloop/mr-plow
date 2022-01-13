@@ -6,26 +6,30 @@ import (
 	"strings"
 )
 
+func CastSingleElement(inputTypeMap map[string]string, inputName string, inputData interface{}) interface{} {
+	if column_type, ok := inputTypeMap[inputName]; ok {
+		switch strings.ToLower(column_type) {
+		case "string":
+			return castToString(inputData)
+		case "integer":
+			return castToInt(inputData)
+		case "float":
+			return castToFloat(inputData)
+		case "boolean":
+			return castToBool(inputData)
+		default:
+			return inputData
+		}
+	} else {
+		return inputData
+	}
+}
+
 func CastArrayOfData(inputTypeMap map[string]string, inputNameArray []string, inputDataArray []interface{}) []interface{} {
 	castedColumns := make([]interface{}, len(inputDataArray))
 
 	for i := range inputDataArray {
-		if column_type, ok := inputTypeMap[inputNameArray[i]]; ok {
-			switch strings.ToLower(column_type) {
-			case "string":
-				castedColumns[i] = castToString(inputDataArray[i])
-			case "integer":
-				castedColumns[i] = castToInt(inputDataArray[i])
-			case "float":
-				castedColumns[i] = castToFloat(inputDataArray[i])
-			case "boolean":
-				castedColumns[i] = castToBool(inputDataArray[i])
-			default:
-				castedColumns[i] = inputDataArray[i]
-			}
-		} else {
-			castedColumns[i] = inputDataArray[i]
-		}
+		castedColumns[i] = CastSingleElement(inputTypeMap, inputNameArray[i], inputDataArray[i])
 	}
 
 	return castedColumns
