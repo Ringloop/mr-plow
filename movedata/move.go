@@ -92,27 +92,18 @@ func (mover *Mover) MoveData() error {
 
 	for rows.Next() {
 		columns := make([]interface{}, len(cols))
-		columnPointers := make([]interface{}, len(cols))
-
 		for i := range columns {
-			columnPointers[i] = &columns[i]
+			columns[i] = &columns[i]
 		}
 
-		if err := rows.Scan(columnPointers...); err != nil {
+		if err := rows.Scan(columns...); err != nil {
 			return err
 		}
-
 		convertedArrayOfData := casting.CastArrayOfData(columnsMap, cols, columns)
-		for i := range columns {
-			columnPointers[i] = &convertedArrayOfData[i]
-		}
-
 		document := make(map[string]interface{})
 		for i, colName := range cols {
-			val := columnPointers[i].(*interface{})
-			document[colName] = *val
+			document[colName] = convertedArrayOfData[i]
 		}
-
 		for _, jsonfield := range mover.queryConf.JSONFields {
 			var jsonData map[string]interface{}
 
