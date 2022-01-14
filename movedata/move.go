@@ -73,7 +73,9 @@ func (mover *Mover) MoveData() error {
 	var jsonColsMap = map[string]map[string]string{}
 	for _, jsonColConfig := range mover.queryConf.JSONFields {
 		for _, colConfig := range jsonColConfig.Fields {
-			jsonColsMap[jsonColConfig.FieldName] = make(map[string]string)
+			if jsonColsMap[jsonColConfig.FieldName] == nil {
+				jsonColsMap[jsonColConfig.FieldName] = make(map[string]string)
+			}
 			jsonColsMap[jsonColConfig.FieldName][colConfig.Name] = colConfig.Type
 		}
 	}
@@ -112,7 +114,6 @@ func (mover *Mover) MoveData() error {
 		}
 
 		for _, jsonfield := range mover.queryConf.JSONFields {
-			//TODO: Build the json structure
 			var jsonData map[string]interface{}
 
 			byteData := document[jsonfield.FieldName].([]byte)
@@ -121,9 +122,9 @@ func (mover *Mover) MoveData() error {
 				return err
 			}
 			for _, field := range jsonfield.Fields {
-				document[field.Name] = casting.CastSingleElement(jsonColsMap[jsonfield.FieldName], field.Name, jsonData[field.Name])
+				jsonData[field.Name] = casting.CastSingleElement(jsonColsMap[jsonfield.FieldName], field.Name, jsonData[field.Name])
 			}
-
+			document[jsonfield.FieldName] = jsonData
 		}
 
 		documentToSend, err := json.Marshal(document)
