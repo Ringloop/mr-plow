@@ -29,6 +29,7 @@ func initSqlDB_local(t *testing.T, conf *config.ImportConfig) *sql.DB {
 		user_id SERIAL PRIMARY KEY,
 		email VARCHAR ( 255 ) UNIQUE NOT NULL,
 		additional_info JSON,
+		optional_info JSON, 
 		last_update TIMESTAMP NOT NULL
 	)
 	
@@ -56,14 +57,21 @@ func TestIntegrationWithJSON(t *testing.T) {
 	repo.Delete(conf.Queries[0].Index)
 
 	email := "mario@rossi.it"
-	json := `
+	data_json := `
 {
 	"str_col": "String Data",
-    "int_col": 4237,
-    "bool_col": true,
-    "float_col": 48.94065780742467
+    "int_col": "4237",
+    "bool_col": "true",
+    "float_col": "48.94065780742467"
 }`
-	insertDataWithJSON(db, email, json, t)
+	opt_json := `
+{
+	"opt_str": "Optional String",
+	"opt_int": 8978,
+	"opt_bool": true,
+	"opt_float": 32.547545
+}`
+	insertDataWithJSON(db, email, data_json, opt_json, t)
 	originalLastDate, err := repo.FindLastUpdateOrEpochDate(conf.Queries[0].Index, conf.Queries[0].UpdateDate)
 	if err != nil {
 		t.Error("error in getting last date", err)
@@ -136,11 +144,11 @@ func initConfigIntegrationTestWithJson(t *testing.T) *config.ImportConfig {
 	return conf
 }
 
-func insertDataWithJSON(db *sql.DB, email, json string, t *testing.T) {
+func insertDataWithJSON(db *sql.DB, email, info_json string, opt_json string, t *testing.T) {
 	sql_statement := fmt.Sprintf(`
-	INSERT INTO test.table1 (email, additional_info, last_update)
-	VALUES ('%s', '%s', now());	
-	`, email, json)
+	INSERT INTO test.table1 (email, additional_info, optional_info, last_update)
+	VALUES ('%s', '%s', '%s', now());	
+	`, email, info_json, opt_json)
 	_, err := db.Exec(sql_statement)
 	if err != nil {
 		t.Error("Error insert temp table: ", err)
