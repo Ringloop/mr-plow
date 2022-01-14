@@ -62,7 +62,8 @@ func TestIntegrationWithJSON(t *testing.T) {
 	"str_col": "String Data",
     "int_col": "4237",
     "bool_col": "true",
-    "float_col": "48.94065780742467"
+    "float_col": "48.94065780742467",
+	"optional_string": "Optional Value"
 }`
 	opt_json := `
 {
