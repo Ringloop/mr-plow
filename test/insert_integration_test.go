@@ -8,8 +8,8 @@ import (
 
 	"github.com/Ringloop/mr-plow/elastic"
 	"github.com/Ringloop/mr-plow/movedata"
-	"github.com/Ringloop/mr-plow/test_util"
 	_ "github.com/lib/pq"
+	"github.com/stretchr/testify/require"
 )
 
 type insertIntegrationTest struct{}
@@ -98,10 +98,10 @@ func TestInsertIntegration(t *testing.T) {
 		t.FailNow()
 	}
 
-	test_util.AssertEqual(t, len(response1.Hits.Hits), 1)
-	test_util.AssertEqual(t, response1.Hits.Hits[0].Source.Email, "mario@rossi.it")
-	test_util.AssertNotNull(t, response1.Hits.Hits[0].Source.LastUpdate)
-	test_util.AssertNotNull(t, response1.Hits.Hits[0].Source.UserID)
+	require.Equal(t, len(response1.Hits.Hits), 1)
+	require.Equal(t, response1.Hits.Hits[0].Source.Email, "mario@rossi.it")
+	require.NotNil(t, response1.Hits.Hits[0].Source.LastUpdate)
+	require.NotNil(t, response1.Hits.Hits[0].Source.UserID)
 
 	//and when (inserting new data)
 	insertData(db, "mario@rossi.it", t)
@@ -126,5 +126,5 @@ func TestInsertIntegration(t *testing.T) {
 		t.FailNow()
 	}
 
-	test_util.AssertEqual(t, len(response2.Hits.Hits), 2)
+	require.Equal(t, len(response2.Hits.Hits), 2)
 }
