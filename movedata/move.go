@@ -35,6 +35,26 @@ func New(db *sql.DB, globalConfig *config.ImportConfig, queryConf *config.QueryM
 	return mover
 }
 
+func getColumnsConfiguration(queryConf *config.QueryModel) (map[string]string, map[string]map[string]string) {
+	//create the map for the native fields of the query
+	columnsMap := make(map[string]string)
+	for _, colConfig := range queryConf.Fields {
+		columnsMap[colConfig.Name] = colConfig.Type
+	}
+
+	//create a nested map for the JSON fields (any JSON contains a set of fields)
+	var jsonColsMap = map[string]map[string]string{}
+	for _, jsonColConfig := range queryConf.JSONFields {
+		for _, colConfig := range jsonColConfig.Fields {
+			if jsonColsMap[jsonColConfig.FieldName] == nil {
+				jsonColsMap[jsonColConfig.FieldName] = make(map[string]string)
+			}
+			jsonColsMap[jsonColConfig.FieldName][colConfig.Name] = colConfig.Type
+		}
+	}
+	return columnsMap, jsonColsMap
+}
+
 func (mover *Mover) MoveData() error {
 	select {
 	case <-mover.canExec:
@@ -63,22 +83,7 @@ func (mover *Mover) MoveData() error {
 	}
 	defer elasticBulk.Close(context.Background())
 
-	//create the map for the native fields of the query
-	columnsMap := make(map[string]string)
-	for _, colConfig := range mover.queryConf.Fields {
-		columnsMap[colConfig.Name] = colConfig.Type
-	}
-
-	//create a nested map for the JSON fields (any JSON contains a set of fields)
-	var jsonColsMap = map[string]map[string]string{}
-	for _, jsonColConfig := range mover.queryConf.JSONFields {
-		for _, colConfig := range jsonColConfig.Fields {
-			if jsonColsMap[jsonColConfig.FieldName] == nil {
-				jsonColsMap[jsonColConfig.FieldName] = make(map[string]string)
-			}
-			jsonColsMap[jsonColConfig.FieldName][colConfig.Name] = colConfig.Type
-		}
-	}
+	columnsMap, jsonColsMap := getColumnsConfiguration(mover.queryConf)
 
 	log.Printf("going to execute query %s with param %s", mover.queryConf.Query, lastDate)
 	rows, err := mover.db.Query(mover.queryConf.Query, lastDate)
@@ -146,7 +151,6 @@ func (mover *Mover) MoveData() error {
 		}
 	}
 	return nil
-
 }
 
 func (mover *Mover) getLastDate(repo *elastic.Repository) (*time.Time, error) {
