@@ -8,8 +8,8 @@ import (
 
 	"github.com/Ringloop/mr-plow/elastic"
 	"github.com/Ringloop/mr-plow/movedata"
-	"github.com/Ringloop/mr-plow/test_util"
 	_ "github.com/lib/pq"
+	"github.com/stretchr/testify/assert"
 )
 
 type insertTypedIntegrationTest struct{}
@@ -103,10 +103,10 @@ func TestInsertTypedIntegration(t *testing.T) {
 		t.FailNow()
 	}
 
-	test_util.AssertEqual(t, len(response1.Hits.Hits), 1)
-	test_util.AssertEqual(t, response1.Hits.Hits[0].Source.Email, "mario@rossi.it")
-	test_util.AssertNotNull(t, response1.Hits.Hits[0].Source.LastUpdate)
-	test_util.AssertNotNull(t, response1.Hits.Hits[0].Source.UserID)
+	assert.Equal(t, len(response1.Hits.Hits), 1)
+	assert.Equal(t, response1.Hits.Hits[0].Source.Email, "mario@rossi.it")
+	assert.NotNil(t, response1.Hits.Hits[0].Source.LastUpdate)
+	assert.NotNil(t, response1.Hits.Hits[0].Source.UserID)
 
 	//and when (inserting new data)
 	insertData(db, "mario@rossi.it", t)
@@ -131,5 +131,5 @@ func TestInsertTypedIntegration(t *testing.T) {
 		t.FailNow()
 	}
 
-	test_util.AssertEqual(t, len(response2.Hits.Hits), 2)
+	assert.Equal(t, len(response2.Hits.Hits), 2)
 }

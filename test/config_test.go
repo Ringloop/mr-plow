@@ -3,7 +3,7 @@ package test
 import (
 	"testing"
 
-	"github.com/Ringloop/mr-plow/test_util"
+	"github.com/stretchr/testify/assert"
 
 	"github.com/Ringloop/mr-plow/config"
 )
@@ -38,12 +38,12 @@ func TestGetComplexConfig(t *testing.T) {
 		t.Errorf("Parsing config, got error %s", err)
 	}
 
-	test_util.AssertEqual(t, err, nil)
-	test_util.AssertEqual(t, configVal.Database, "databaseValue")
-	test_util.AssertEqual(t, configVal.Queries[0].Query, "query_0_Value")
-	test_util.AssertEqual(t, configVal.Queries[0].Index, "index_0_Value")
-	test_util.AssertEqual(t, configVal.Queries[0].UpdateDate, "test0")
-	test_util.AssertEqual(t, configVal.Queries[1].Query, "query_1_Value")
-	test_util.AssertEqual(t, configVal.Queries[1].Index, "index_1_Value")
-	test_util.AssertEqual(t, configVal.Queries[1].UpdateDate, "test1")
+	assert.Equal(t, err, nil)
+	assert.Equal(t, configVal.Database, "databaseValue")
+	assert.Equal(t, configVal.Queries[0].Query, "query_0_Value")
+	assert.Equal(t, configVal.Queries[0].Index, "index_0_Value")
+	assert.Equal(t, configVal.Queries[0].UpdateDate, "test0")
+	assert.Equal(t, configVal.Queries[1].Query, "query_1_Value")
+	assert.Equal(t, configVal.Queries[1].Index, "index_1_Value")
+	assert.Equal(t, configVal.Queries[1].UpdateDate, "test1")
 }

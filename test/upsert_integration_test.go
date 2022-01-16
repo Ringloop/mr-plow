@@ -7,8 +7,8 @@ import (
 
 	"github.com/Ringloop/mr-plow/elastic"
 	"github.com/Ringloop/mr-plow/movedata"
-	"github.com/Ringloop/mr-plow/test_util"
 	_ "github.com/lib/pq"
+	"github.com/stretchr/testify/assert"
 )
 
 type upsertIntegrationTest struct{}
@@ -87,11 +87,11 @@ func TestUpsertIntegration(t *testing.T) {
 		t.FailNow()
 	}
 
-	test_util.AssertEqual(t, len(response1.Hits.Hits), 1)
-	test_util.AssertEqual(t, response1.Hits.Hits[0].Source.Email, "mario@rossi.it")
-	test_util.AssertNotNull(t, response1.Hits.Hits[0].Source.LastUpdate)
-	test_util.AssertNotNull(t, response1.Hits.Hits[0].Source.UserID)
-	test_util.AssertEqual(t, response1.Hits.Hits[0].ID, "mario@rossi.it")
+	assert.Equal(t, len(response1.Hits.Hits), 1, "Test should extract exactly ONE result from Elastic")
+	assert.Equal(t, response1.Hits.Hits[0].Source.Email, "mario@rossi.it", "Email not valid")
+	assert.NotNil(t, response1.Hits.Hits[0].Source.LastUpdate, "Last Update should not be NIL")
+	assert.NotNil(t, response1.Hits.Hits[0].Source.UserID, "UserID should not be null")
+	assert.Equal(t, response1.Hits.Hits[0].ID, "mario@rossi.it")
 
 	//and when (inserting new data)
 	insertData(db, "mario@rossi.it", t)
@@ -116,5 +116,5 @@ func TestUpsertIntegration(t *testing.T) {
 		t.FailNow()
 	}
 
-	test_util.AssertEqual(t, len(response2.Hits.Hits), 1)
+	assert.Equal(t, len(response2.Hits.Hits), 1)
 }

@@ -3,7 +3,7 @@ package test
 import (
 	"testing"
 
-	"github.com/Ringloop/mr-plow/test_util"
+	"github.com/stretchr/testify/assert"
 
 	"github.com/Ringloop/mr-plow/config"
 )
@@ -61,44 +61,44 @@ func TestGetCompleteConfig(t *testing.T) {
 		t.Errorf("Parsing config, got error %s", err)
 	}
 
-	test_util.AssertEqual(t, err, nil)
-	test_util.AssertEqual(t, configVal.Database, "databaseValue")
+	assert.Equal(t, err, nil)
+	assert.Equal(t, configVal.Database, "databaseValue")
 	queries := configVal.Queries
-	test_util.AssertEqual(t, len(queries), 2)
+	assert.Equal(t, len(queries), 2)
 
 	//test queries[0]
-	test_util.AssertEqual(t, queries[0].Index, "index_1")
-	test_util.AssertEqual(t, queries[0].Query, "select * from table_1")
-	test_util.AssertEqual(t, queries[0].UpdateDate, "test01")
-	test_util.AssertEqual(t, queries[0].Id, "MyId_1")
+	assert.Equal(t, queries[0].Index, "index_1")
+	assert.Equal(t, queries[0].Query, "select * from table_1")
+	assert.Equal(t, queries[0].UpdateDate, "test01")
+	assert.Equal(t, queries[0].Id, "MyId_1")
 	queryFields := queries[0].Fields
-	test_util.AssertEqual(t, queryFields[0].Name, "name")
-	test_util.AssertEqual(t, queryFields[0].Type, "String")
-	test_util.AssertEqual(t, queryFields[1].Name, "last_update")
-	test_util.AssertEqual(t, queryFields[1].Type, "Date")
+	assert.Equal(t, queryFields[0].Name, "name")
+	assert.Equal(t, queryFields[0].Type, "String")
+	assert.Equal(t, queryFields[1].Name, "last_update")
+	assert.Equal(t, queryFields[1].Type, "Date")
 
 	jsonFields1 := queries[0].JSONFields
-	test_util.AssertEqual(t, len(jsonFields1), 2)
-	test_util.AssertEqual(t, jsonFields1[0].FieldName, "dataField_1")
+	assert.Equal(t, len(jsonFields1), 2)
+	assert.Equal(t, jsonFields1[0].FieldName, "dataField_1")
 	attribute1JsonFields1 := jsonFields1[0]
-	test_util.AssertEqual(t, attribute1JsonFields1.Fields[0].Name, "attribute_1_Name")
-	test_util.AssertEqual(t, attribute1JsonFields1.Fields[0].Type, "attribute_1_Type")
-	test_util.AssertEqual(t, jsonFields1[1].FieldName, "dataField_2")
+	assert.Equal(t, attribute1JsonFields1.Fields[0].Name, "attribute_1_Name")
+	assert.Equal(t, attribute1JsonFields1.Fields[0].Type, "attribute_1_Type")
+	assert.Equal(t, jsonFields1[1].FieldName, "dataField_2")
 	attribute1JsonFields2 := jsonFields1[1]
-	test_util.AssertEqual(t, attribute1JsonFields2.Fields[0].Type, "attribute_2_Type")
-	test_util.AssertEqual(t, attribute1JsonFields2.Fields[0].Name, "attribute_2_Name")
-	test_util.AssertEqual(t, attribute1JsonFields2.Fields[1].Name, "attribute_2_1_Name")
-	test_util.AssertEqual(t, attribute1JsonFields2.Fields[1].Type, "attribute_2_1_Type")
+	assert.Equal(t, attribute1JsonFields2.Fields[0].Type, "attribute_2_Type")
+	assert.Equal(t, attribute1JsonFields2.Fields[0].Name, "attribute_2_Name")
+	assert.Equal(t, attribute1JsonFields2.Fields[1].Name, "attribute_2_1_Name")
+	assert.Equal(t, attribute1JsonFields2.Fields[1].Type, "attribute_2_1_Type")
 
 	//test queries[1]
-	test_util.AssertEqual(t, queries[1].Index, "index_2")
-	test_util.AssertEqual(t, queries[1].Query, "select * from table_2")
-	test_util.AssertEqual(t, queries[1].UpdateDate, "test02")
-	test_util.AssertEqual(t, queries[1].Id, "MyId_2")
+	assert.Equal(t, queries[1].Index, "index_2")
+	assert.Equal(t, queries[1].Query, "select * from table_2")
+	assert.Equal(t, queries[1].UpdateDate, "test02")
+	assert.Equal(t, queries[1].Id, "MyId_2")
 	jsonFields2 := queries[1].JSONFields
-	test_util.AssertEqual(t, len(jsonFields2), 1)
-	test_util.AssertEqual(t, jsonFields2[0].FieldName, "dataField_2")
+	assert.Equal(t, len(jsonFields2), 1)
+	assert.Equal(t, jsonFields2[0].FieldName, "dataField_2")
 	attribute2JsonFields1 := jsonFields2[0].Fields
-	test_util.AssertEqual(t, attribute2JsonFields1[0].Name, "attribute_1_Name_2")
-	test_util.AssertEqual(t, attribute2JsonFields1[0].Type, "attribute_1_Type_2")
+	assert.Equal(t, attribute2JsonFields1[0].Name, "attribute_1_Name_2")
+	assert.Equal(t, attribute2JsonFields1[0].Type, "attribute_1_Type_2")
 }

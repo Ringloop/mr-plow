@@ -2,12 +2,13 @@ package test
 
 import (
 	"encoding/json"
-	"github.com/Ringloop/mr-plow/scheduler"
 	"testing"
 	"time"
 
+	"github.com/Ringloop/mr-plow/scheduler"
+	"github.com/stretchr/testify/assert"
+
 	"github.com/Ringloop/mr-plow/elastic"
-	"github.com/Ringloop/mr-plow/test_util"
 	_ "github.com/lib/pq"
 )
 
@@ -44,10 +45,10 @@ func TestSchedulingIntegration(t *testing.T) {
 		t.FailNow()
 	}
 
-	test_util.AssertEqual(t, len(response1.Hits.Hits), 1)
-	test_util.AssertEqual(t, response1.Hits.Hits[0].Source.Email, "mario@rossi.it")
-	test_util.AssertNotNull(t, response1.Hits.Hits[0].Source.LastUpdate)
-	test_util.AssertNotNull(t, response1.Hits.Hits[0].Source.UserID)
+	assert.Equal(t, len(response1.Hits.Hits), 1)
+	assert.Equal(t, response1.Hits.Hits[0].Source.Email, "mario@rossi.it")
+	assert.NotNil(t, response1.Hits.Hits[0].Source.LastUpdate)
+	assert.NotNil(t, response1.Hits.Hits[0].Source.UserID)
 
 	//and when (inserting new data)
 	insertData(db, "mario@rossi.it", t)
@@ -67,7 +68,7 @@ func TestSchedulingIntegration(t *testing.T) {
 		t.FailNow()
 	}
 
-	test_util.AssertEqual(t, len(response2.Hits.Hits), 2)
+	assert.Equal(t, len(response2.Hits.Hits), 2)
 
 	s.Done <- FakeExitSignal{}
 
@@ -89,6 +90,6 @@ func TestSchedulingIntegration(t *testing.T) {
 		t.FailNow()
 	}
 
-	test_util.AssertEqual(t, <-finished, true)
-	test_util.AssertEqual(t, len(response3.Hits.Hits), len(response2.Hits.Hits))
+	assert.Equal(t, <-finished, true)
+	assert.Equal(t, len(response3.Hits.Hits), len(response2.Hits.Hits))
 }
