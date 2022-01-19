@@ -7,8 +7,8 @@ import (
 )
 
 func CastSingleElement(inputTypeMap map[string]string, inputName string, inputData interface{}) interface{} {
-	if column_type, ok := inputTypeMap[inputName]; ok {
-		switch strings.ToLower(column_type) {
+	if columnType, ok := inputTypeMap[inputName]; ok {
+		switch strings.ToLower(columnType) {
 		case "string":
 			return castToString(inputData)
 		case "integer":

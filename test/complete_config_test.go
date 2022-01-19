@@ -3,9 +3,8 @@ package test
 import (
 	"testing"
 
-	"github.com/stretchr/testify/assert"
-
 	"github.com/Ringloop/mr-plow/config"
+	"github.com/stretchr/testify/require"
 )
 
 type readerCompleteTest struct{}
@@ -61,44 +60,44 @@ func TestGetCompleteConfig(t *testing.T) {
 		t.Errorf("Parsing config, got error %s", err)
 	}
 
-	assert.Equal(t, err, nil)
-	assert.Equal(t, configVal.Database, "databaseValue")
+	require.Equal(t, err, nil)
+	require.Equal(t, configVal.Database, "databaseValue")
 	queries := configVal.Queries
-	assert.Equal(t, len(queries), 2)
+	require.Equal(t, len(queries), 2)
 
 	//test queries[0]
-	assert.Equal(t, queries[0].Index, "index_1")
-	assert.Equal(t, queries[0].Query, "select * from table_1")
-	assert.Equal(t, queries[0].UpdateDate, "test01")
-	assert.Equal(t, queries[0].Id, "MyId_1")
+	require.Equal(t, queries[0].Index, "index_1")
+	require.Equal(t, queries[0].Query, "select * from table_1")
+	require.Equal(t, queries[0].UpdateDate, "test01")
+	require.Equal(t, queries[0].Id, "MyId_1")
 	queryFields := queries[0].Fields
-	assert.Equal(t, queryFields[0].Name, "name")
-	assert.Equal(t, queryFields[0].Type, "String")
-	assert.Equal(t, queryFields[1].Name, "last_update")
-	assert.Equal(t, queryFields[1].Type, "Date")
+	require.Equal(t, queryFields[0].Name, "name")
+	require.Equal(t, queryFields[0].Type, "String")
+	require.Equal(t, queryFields[1].Name, "last_update")
+	require.Equal(t, queryFields[1].Type, "Date")
 
 	jsonFields1 := queries[0].JSONFields
-	assert.Equal(t, len(jsonFields1), 2)
-	assert.Equal(t, jsonFields1[0].FieldName, "dataField_1")
+	require.Equal(t, len(jsonFields1), 2)
+	require.Equal(t, jsonFields1[0].FieldName, "dataField_1")
 	attribute1JsonFields1 := jsonFields1[0]
-	assert.Equal(t, attribute1JsonFields1.Fields[0].Name, "attribute_1_Name")
-	assert.Equal(t, attribute1JsonFields1.Fields[0].Type, "attribute_1_Type")
-	assert.Equal(t, jsonFields1[1].FieldName, "dataField_2")
+	require.Equal(t, attribute1JsonFields1.Fields[0].Name, "attribute_1_Name")
+	require.Equal(t, attribute1JsonFields1.Fields[0].Type, "attribute_1_Type")
+	require.Equal(t, jsonFields1[1].FieldName, "dataField_2")
 	attribute1JsonFields2 := jsonFields1[1]
-	assert.Equal(t, attribute1JsonFields2.Fields[0].Type, "attribute_2_Type")
-	assert.Equal(t, attribute1JsonFields2.Fields[0].Name, "attribute_2_Name")
-	assert.Equal(t, attribute1JsonFields2.Fields[1].Name, "attribute_2_1_Name")
-	assert.Equal(t, attribute1JsonFields2.Fields[1].Type, "attribute_2_1_Type")
+	require.Equal(t, attribute1JsonFields2.Fields[0].Type, "attribute_2_Type")
+	require.Equal(t, attribute1JsonFields2.Fields[0].Name, "attribute_2_Name")
+	require.Equal(t, attribute1JsonFields2.Fields[1].Name, "attribute_2_1_Name")
+	require.Equal(t, attribute1JsonFields2.Fields[1].Type, "attribute_2_1_Type")
 
 	//test queries[1]
-	assert.Equal(t, queries[1].Index, "index_2")
-	assert.Equal(t, queries[1].Query, "select * from table_2")
-	assert.Equal(t, queries[1].UpdateDate, "test02")
-	assert.Equal(t, queries[1].Id, "MyId_2")
+	require.Equal(t, queries[1].Index, "index_2")
+	require.Equal(t, queries[1].Query, "select * from table_2")
+	require.Equal(t, queries[1].UpdateDate, "test02")
+	require.Equal(t, queries[1].Id, "MyId_2")
 	jsonFields2 := queries[1].JSONFields
-	assert.Equal(t, len(jsonFields2), 1)
-	assert.Equal(t, jsonFields2[0].FieldName, "dataField_2")
+	require.Equal(t, len(jsonFields2), 1)
+	require.Equal(t, jsonFields2[0].FieldName, "dataField_2")
 	attribute2JsonFields1 := jsonFields2[0].Fields
-	assert.Equal(t, attribute2JsonFields1[0].Name, "attribute_1_Name_2")
-	assert.Equal(t, attribute2JsonFields1[0].Type, "attribute_1_Type_2")
+	require.Equal(t, attribute2JsonFields1[0].Name, "attribute_1_Name_2")
+	require.Equal(t, attribute2JsonFields1[0].Type, "attribute_1_Type_2")
 }

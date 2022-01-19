@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/Ringloop/mr-plow/scheduler"
-	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
 	"github.com/Ringloop/mr-plow/elastic"
 	_ "github.com/lib/pq"
@@ -45,10 +45,10 @@ func TestSchedulingIntegration(t *testing.T) {
 		t.FailNow()
 	}
 
-	assert.Equal(t, len(response1.Hits.Hits), 1)
-	assert.Equal(t, response1.Hits.Hits[0].Source.Email, "mario@rossi.it")
-	assert.NotNil(t, response1.Hits.Hits[0].Source.LastUpdate)
-	assert.NotNil(t, response1.Hits.Hits[0].Source.UserID)
+	require.Equal(t, len(response1.Hits.Hits), 1)
+	require.Equal(t, response1.Hits.Hits[0].Source.Email, "mario@rossi.it")
+	require.NotNil(t, response1.Hits.Hits[0].Source.LastUpdate)
+	require.NotNil(t, response1.Hits.Hits[0].Source.UserID)
 
 	//and when (inserting new data)
 	insertData(db, "mario@rossi.it", t)
@@ -68,7 +68,7 @@ func TestSchedulingIntegration(t *testing.T) {
 		t.FailNow()
 	}
 
-	assert.Equal(t, len(response2.Hits.Hits), 2)
+	require.Equal(t, len(response2.Hits.Hits), 2)
 
 	s.Done <- FakeExitSignal{}
 
@@ -90,6 +90,6 @@ func TestSchedulingIntegration(t *testing.T) {
 		t.FailNow()
 	}
 
-	assert.Equal(t, <-finished, true)
-	assert.Equal(t, len(response3.Hits.Hits), len(response2.Hits.Hits))
+	require.Equal(t, <-finished, true)
+	require.Equal(t, len(response3.Hits.Hits), len(response2.Hits.Hits))
 }

@@ -43,7 +43,7 @@ func getColumnsConfiguration(queryConf *config.QueryModel) (map[string]string, m
 	}
 
 	//create a nested map for the JSON fields (any JSON contains a set of fields)
-	var jsonColsMap = map[string]map[string]string{}
+	var jsonColsMap = make(map[string]map[string]string)
 	for _, jsonColConfig := range queryConf.JSONFields {
 		for _, colConfig := range jsonColConfig.Fields {
 			if jsonColsMap[jsonColConfig.FieldName] == nil {

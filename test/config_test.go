@@ -3,9 +3,8 @@ package test
 import (
 	"testing"
 
-	"github.com/stretchr/testify/assert"
-
 	"github.com/Ringloop/mr-plow/config"
+	"github.com/stretchr/testify/require"
 )
 
 type readerComplexTest struct{}
@@ -38,12 +37,12 @@ func TestGetComplexConfig(t *testing.T) {
 		t.Errorf("Parsing config, got error %s", err)
 	}
 
-	assert.Equal(t, err, nil)
-	assert.Equal(t, configVal.Database, "databaseValue")
-	assert.Equal(t, configVal.Queries[0].Query, "query_0_Value")
-	assert.Equal(t, configVal.Queries[0].Index, "index_0_Value")
-	assert.Equal(t, configVal.Queries[0].UpdateDate, "test0")
-	assert.Equal(t, configVal.Queries[1].Query, "query_1_Value")
-	assert.Equal(t, configVal.Queries[1].Index, "index_1_Value")
-	assert.Equal(t, configVal.Queries[1].UpdateDate, "test1")
+	require.Equal(t, err, nil)
+	require.Equal(t, configVal.Database, "databaseValue")
+	require.Equal(t, configVal.Queries[0].Query, "query_0_Value")
+	require.Equal(t, configVal.Queries[0].Index, "index_0_Value")
+	require.Equal(t, configVal.Queries[0].UpdateDate, "test0")
+	require.Equal(t, configVal.Queries[1].Query, "query_1_Value")
+	require.Equal(t, configVal.Queries[1].Index, "index_1_Value")
+	require.Equal(t, configVal.Queries[1].UpdateDate, "test1")
 }
