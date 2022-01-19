@@ -123,11 +123,7 @@ func (mover *Mover) MoveData() error {
 				return err
 			}
 			for _, field := range jsonfield.Fields {
-				// jsonData[field.Name], ok = casting.CastSingleElement(jsonColsMap[jsonfield.FieldName], field.Name, jsonData[field.Name])
 				jsonData[field.Name] = casting.CastSingleElement(jsonColsMap[jsonfield.FieldName], field.Name, jsonData[field.Name])
-				// if !ok {
-				// 	return fmt.Errorf("error getting ..: %s", err)
-				// }
 			}
 			document[jsonfield.FieldName] = jsonData
 		}
