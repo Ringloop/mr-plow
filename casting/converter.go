@@ -47,10 +47,10 @@ func castToString(inputVar interface{}) string {
 	return inputVar.(string)
 }
 
-func castToInt(inputVar interface{}) int64 {
+func castToInt(inputVar interface{}) int {
 	switch varType := reflect.TypeOf(inputVar).String(); varType {
 	case "string":
-		res, err := strconv.ParseInt(inputVar.(string), 10, 64) //have to manage this error
+		res, err := strconv.Atoi(inputVar.(string)) //have to manage this error
 		if err == nil {
 			return res
 		}
@@ -61,9 +61,12 @@ func castToInt(inputVar interface{}) int64 {
 			return 0
 		}
 	case "float64":
-		return int64(inputVar.(float64))
+		return int(inputVar.(float64))
+	case "int64":
+		return int(inputVar.(int64))
 	}
-	return inputVar.(int64)
+
+	return inputVar.(int)
 }
 
 func castToFloat(inputVar interface{}) float64 {

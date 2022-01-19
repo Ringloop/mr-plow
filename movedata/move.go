@@ -96,7 +96,7 @@ func (mover *Mover) MoveData() error {
 	}
 
 	for rows.Next() {
-		columns := make([]interface{}, len(cols))
+		columns := make([](interface{}), len(cols))
 		for i := range columns {
 			columns[i] = &columns[i]
 		}
@@ -112,13 +112,22 @@ func (mover *Mover) MoveData() error {
 		for _, jsonfield := range mover.queryConf.JSONFields {
 			var jsonData map[string]interface{}
 
-			byteData := document[jsonfield.FieldName].([]byte)
+			data, ok := document[jsonfield.FieldName]
+			if !ok {
+				return fmt.Errorf("error getting ....: %s", err)
+			}
+			byteData := data.([]byte)
+
 			err := json.Unmarshal(byteData, &jsonData)
 			if err != nil {
 				return err
 			}
 			for _, field := range jsonfield.Fields {
+				// jsonData[field.Name], ok = casting.CastSingleElement(jsonColsMap[jsonfield.FieldName], field.Name, jsonData[field.Name])
 				jsonData[field.Name] = casting.CastSingleElement(jsonColsMap[jsonfield.FieldName], field.Name, jsonData[field.Name])
+				// if !ok {
+				// 	return fmt.Errorf("error getting ..: %s", err)
+				// }
 			}
 			document[jsonfield.FieldName] = jsonData
 		}
