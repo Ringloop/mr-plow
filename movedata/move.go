@@ -22,14 +22,20 @@ type Mover struct {
 	db           *sql.DB
 	globalConfig *config.ImportConfig
 	queryConf    *config.QueryModel
+	columnsMap   map[string]string
+	jsonColsMap  map[string]map[string]string
 	canExec      chan bool
 }
 
 func New(db *sql.DB, globalConfig *config.ImportConfig, queryConf *config.QueryModel) *Mover {
+	columnsMap, jsonColsMap := getColumnsConfiguration(queryConf)
+
 	mover := &Mover{
 		db:           db,
 		globalConfig: globalConfig,
 		queryConf:    queryConf,
+		columnsMap:   columnsMap,
+		jsonColsMap:  jsonColsMap,
 		canExec:      make(chan bool, 1)}
 	mover.canExec <- true
 	return mover
@@ -83,8 +89,6 @@ func (mover *Mover) MoveData() error {
 	}
 	defer elasticBulk.Close(context.Background())
 
-	columnsMap, jsonColsMap := getColumnsConfiguration(mover.queryConf)
-
 	log.Printf("going to execute query %s with param %s", mover.queryConf.Query, lastDate)
 	rows, err := mover.db.Query(mover.queryConf.Query, lastDate)
 	if err != nil {
@@ -104,7 +108,8 @@ func (mover *Mover) MoveData() error {
 		if err := rows.Scan(columns...); err != nil {
 			return err
 		}
-		convertedArrayOfData := casting.CastArrayOfData(columnsMap, cols, columns)
+		converter := casting.NewConverter(mover.columnsMap)
+		convertedArrayOfData := converter.CastArrayOfData(cols, columns)
 		document := make(map[string]interface{})
 		for i, colName := range cols {
 			document[colName] = convertedArrayOfData[i]
@@ -123,7 +128,8 @@ func (mover *Mover) MoveData() error {
 				return err
 			}
 			for _, field := range jsonfield.Fields {
-				jsonData[field.Name] = casting.CastSingleElement(jsonColsMap[jsonfield.FieldName], field.Name, jsonData[field.Name])
+				jsonConverter := casting.NewConverter(mover.jsonColsMap[jsonfield.FieldName])
+				jsonData[field.Name] = jsonConverter.CastSingleElement(field.Name, jsonData[field.Name])
 			}
 			document[jsonfield.FieldName] = jsonData
 		}

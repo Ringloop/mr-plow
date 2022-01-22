@@ -6,8 +6,18 @@ import (
 	"strings"
 )
 
-func CastSingleElement(inputTypeMap map[string]string, inputName string, inputData interface{}) interface{} {
-	if columnType, ok := inputTypeMap[inputName]; ok {
+type Converter struct {
+	inputTypeMap map[string]string
+}
+
+func NewConverter(inputTypeMap map[string]string) *Converter {
+	converter := &Converter{
+		inputTypeMap: inputTypeMap}
+	return converter
+}
+
+func (converter *Converter) CastSingleElement(inputName string, inputData interface{}) interface{} {
+	if columnType, ok := converter.inputTypeMap[inputName]; ok {
 		switch strings.ToLower(columnType) {
 		case "string":
 			return castToString(inputData)
@@ -25,11 +35,11 @@ func CastSingleElement(inputTypeMap map[string]string, inputName string, inputDa
 	}
 }
 
-func CastArrayOfData(inputTypeMap map[string]string, inputNameArray []string, inputDataArray []interface{}) []interface{} {
+func (converter *Converter) CastArrayOfData(inputNameArray []string, inputDataArray []interface{}) []interface{} {
 	castedColumns := make([]interface{}, len(inputDataArray))
 
 	for i := range inputDataArray {
-		castedColumns[i] = CastSingleElement(inputTypeMap, inputNameArray[i], inputDataArray[i])
+		castedColumns[i] = converter.CastSingleElement(inputNameArray[i], inputDataArray[i])
 	}
 
 	return castedColumns
