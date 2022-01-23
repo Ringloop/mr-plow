@@ -17,7 +17,7 @@ type insertTypedIntegrationTest struct{}
 // test case config scenario
 func (*insertTypedIntegrationTest) ReadConfig() ([]byte, error) {
 
-	return ([]byte(`
+	return []byte(`
 pollingSeconds: 1
 database: "postgres://user:pwd@localhost:5432/postgres?sslmode=disable"
 queries:
@@ -31,7 +31,7 @@ queries:
         type: Integer
 elastic:
   url: http://localhost:9200
-`), nil)
+`), nil
 }
 
 func TestInsertTypedIntegration(t *testing.T) {
