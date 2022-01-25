@@ -82,6 +82,9 @@ func castToInt(inputVar interface{}) int {
 func castToFloat(inputVar interface{}) float64 {
 	switch varType := reflect.TypeOf(inputVar).String(); varType {
 	case "string":
+		if inputVar == "" {
+			return (0.)
+		}
 		inputVar = strings.Replace(inputVar.(string), ",", ".", -1)
 		res, err := strconv.ParseFloat(inputVar.(string), 64) //have to manage this error
 		if err == nil {
