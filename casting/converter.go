@@ -85,7 +85,7 @@ func castToFloat(inputVar interface{}) float64 {
 		if inputVar == "" {
 			return (0.)
 		}
-		inputVar = strings.Replace(inputVar.(string), ",", ".", -1)
+		inputVar = strings.ReplaceAll(inputVar.(string), ",", ".")
 		res, err := strconv.ParseFloat(inputVar.(string), 64) //have to manage this error
 		if err == nil {
 			return res
