@@ -22,6 +22,7 @@ func prepareInputType() map[string]string {
 func TestStringConvertion(t *testing.T) {
 	var intElement int = 5
 	var stringElement string = "StringValue"
+	var stringEmptyElement string = ""
 	var boolElement bool = true
 	var floatElement float64 = 4.54
 
@@ -34,6 +35,10 @@ func TestStringConvertion(t *testing.T) {
 	_, ok = convertedString.(string)
 	require.True(t, ok)
 	require.Equal(t, convertedString, "5")
+	convertedString = converter.CastSingleElement("stringElement", stringEmptyElement)
+	_, ok = convertedString.(string)
+	require.True(t, ok)
+	require.Equal(t, convertedString, "")
 	convertedString = converter.CastSingleElement("stringElement", stringElement)
 	_, ok = convertedString.(string)
 	require.True(t, ok)
@@ -52,6 +57,9 @@ func TestStringConvertion(t *testing.T) {
 func TestIntegerConvertion(t *testing.T) {
 	var intElement int = 5
 	var stringElement string = "5"
+	var stringEmptyElement string = ""
+	var stringSpacesElement string = "    "
+	var stringAlphanumericElement string = "sglhsdg8478"
 	var boolElement bool = true
 	var floatElement float64 = 5.
 
@@ -64,6 +72,18 @@ func TestIntegerConvertion(t *testing.T) {
 	_, ok = convertedInt.(int)
 	require.True(t, ok)
 	require.Equal(t, convertedInt, 5)
+	convertedInt = converter.CastSingleElement("intElement", stringEmptyElement)
+	_, ok = convertedInt.(int)
+	require.True(t, ok)
+	require.Equal(t, convertedInt, 0)
+	convertedInt = converter.CastSingleElement("intElement", stringSpacesElement)
+	_, ok = convertedInt.(int)
+	require.True(t, ok)
+	require.Equal(t, convertedInt, 0)
+	convertedInt = converter.CastSingleElement("intElement", stringAlphanumericElement)
+	_, ok = convertedInt.(int)
+	require.True(t, ok)
+	require.Equal(t, convertedInt, 0)
 	convertedInt = converter.CastSingleElement("intElement", stringElement)
 	_, ok = convertedInt.(int)
 	require.True(t, ok)
@@ -83,7 +103,9 @@ func TestFloatConvertion(t *testing.T) {
 	var intElement int = 5
 	var stringElement string = "5"
 	var stringElementComma string = "1,024,543.22"
-	var stringElementEmpty string = ""
+	var stringEmptyElement string = ""
+	var stringSpacesElement string = ""
+	var stringAlphanumericElement string = "sdgsogdiso94,g09"
 	var boolElement bool = true
 	var floatElement float64 = 5.
 
@@ -96,7 +118,15 @@ func TestFloatConvertion(t *testing.T) {
 	_, ok = convertedFloat.(float64)
 	require.True(t, ok)
 	require.Equal(t, convertedFloat, 5.)
-	convertedFloat = converter.CastSingleElement("floatElement", stringElementEmpty)
+	convertedFloat = converter.CastSingleElement("floatElement", stringEmptyElement)
+	_, ok = convertedFloat.(float64)
+	require.True(t, ok)
+	require.Equal(t, convertedFloat, 0.)
+	convertedFloat = converter.CastSingleElement("floatElement", stringSpacesElement)
+	_, ok = convertedFloat.(float64)
+	require.True(t, ok)
+	require.Equal(t, convertedFloat, 0.)
+	convertedFloat = converter.CastSingleElement("floatElement", stringAlphanumericElement)
 	_, ok = convertedFloat.(float64)
 	require.True(t, ok)
 	require.Equal(t, convertedFloat, 0.)
@@ -122,6 +152,9 @@ func TestFloatConvertion(t *testing.T) {
 func TestBooleanConvertion(t *testing.T) {
 	var intElementFalse int = 0
 	var intElementDefault int = 4
+	var stringEmptyElement string = ""
+	var stringSpacesElement string = "    "
+	var stringAlphanumericElement string = "sglhsdg8478"
 	var stringElementTrue string = "true"
 	var stringElementDefault string = "AnyOtherValue"
 	var boolElement bool = true
@@ -141,6 +174,18 @@ func TestBooleanConvertion(t *testing.T) {
 	_, ok = convertedBool.(bool)
 	require.True(t, ok)
 	require.Equal(t, convertedBool, true)
+	convertedBool = converter.CastSingleElement("boolElement", stringEmptyElement)
+	_, ok = convertedBool.(bool)
+	require.True(t, ok)
+	require.Equal(t, convertedBool, false)
+	convertedBool = converter.CastSingleElement("boolElement", stringSpacesElement)
+	_, ok = convertedBool.(bool)
+	require.True(t, ok)
+	require.Equal(t, convertedBool, false)
+	convertedBool = converter.CastSingleElement("boolElement", stringAlphanumericElement)
+	_, ok = convertedBool.(bool)
+	require.True(t, ok)
+	require.Equal(t, convertedBool, false)
 	convertedBool = converter.CastSingleElement("boolElement", stringElementTrue)
 	_, ok = convertedBool.(bool)
 	require.True(t, ok)

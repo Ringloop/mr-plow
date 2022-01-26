@@ -60,10 +60,14 @@ func castToString(inputVar interface{}) string {
 func castToInt(inputVar interface{}) int {
 	switch varType := reflect.TypeOf(inputVar).String(); varType {
 	case "string":
-		res, err := strconv.Atoi(inputVar.(string)) //have to manage this error
-		if err == nil {
-			return res
+		if strings.TrimSpace(inputVar.(string)) == "" {
+			return 0
 		}
+		res, err := strconv.Atoi(inputVar.(string)) //have to manage this error
+		if err != nil {
+			return 0
+		}
+		return res
 	case "bool":
 		if inputVar.(bool) {
 			return 1
@@ -82,14 +86,15 @@ func castToInt(inputVar interface{}) int {
 func castToFloat(inputVar interface{}) float64 {
 	switch varType := reflect.TypeOf(inputVar).String(); varType {
 	case "string":
-		if inputVar == "" {
-			return (0.)
+		if strings.TrimSpace(inputVar.(string)) == "" {
+			return 0.
 		}
 		inputVar = strings.ReplaceAll(inputVar.(string), ",", "")
 		res, err := strconv.ParseFloat(inputVar.(string), 64) //have to manage this error
-		if err == nil {
-			return res
+		if err != nil {
+			return 0.
 		}
+		return res
 	case "bool":
 		if inputVar.(bool) {
 			return 1.
