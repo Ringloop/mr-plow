@@ -15,10 +15,10 @@ During the startup Mr-Plow checks the data inserted into elasticsearch to check 
 ![image](https://user-images.githubusercontent.com/7256185/141697554-4e6f86d8-06e4-4c22-aea5-30145e40fc41.png )
 
 ### Usage:
-Mr-Plow can execute many queries in parallel.
-Specify a timestamp/date column in the queries in order to get only newly updated/inserted data.
+Mr-Plow essentially executes queries on a relational database and writes these data to ElasticSearch.
+The configured queries are run in parallel, and data are written incrementally, it's only sufficient to specify a timestamp/date column in the queries in order to get only newly updated/inserted data.
 
-Configuration template example:
+This is a basic configuration template example, where we only specify two queries and the endpoint configuration (one Postgres database and one ElasticSearch cluster:
 ```yaml
 # example of config.yml
 pollingSeconds: 5 #database polling interval
@@ -38,6 +38,48 @@ elastic:
   numWorker: 10 #optional, number of worker for indexing each query
   caCertPath: "my/path/ca" #optional, path of custom CA file (it may be needed in some HTTPS connection..)
 ```
+
+There are some additional features Mr Plow can manage, such as specifying the expected data type to be inserted in ElasticSearch JSON (not specified fields are parsed as String):
+
+```yaml
+pollingSeconds: 5
+database: databaseValue
+queries:
+  - index: index_1
+    query: select * from employees
+    updateDate: last_update
+    fields:
+      - name: name
+        type: String
+      - name: working_hours
+        type: Integer
+```
+
+And additionally (for database like Postgres) you can also specify JSON columns fields:
+```yaml
+pollingSeconds: 5
+database: databaseValue
+queries:
+  - index: index_1
+    query: select * from employees
+    updateDate: last_update
+    fields:
+      - name: name
+        type: String
+      - name: working_hours
+        type: Integer
+    JSONFields:
+      - fieldName: dataField_1
+        fields:
+          - name: attribute_1_Name
+            type: attribute_1_Type
+      - fieldName: dataField_2
+        fields:
+          - name: attribute_2_Name
+            type: attribute_2_Type
+    id: MyId_1
+```
+
 
 Download or build the binary (docker images will be released soon):
 ```bash
