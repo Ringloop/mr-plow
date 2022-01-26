@@ -82,7 +82,7 @@ func TestIntegerConvertion(t *testing.T) {
 func TestFloatConvertion(t *testing.T) {
 	var intElement int = 5
 	var stringElement string = "5"
-	var stringElementComma string = "5,25"
+	var stringElementComma string = "1,024,543.22"
 	var stringElementEmpty string = ""
 	var boolElement bool = true
 	var floatElement float64 = 5.
@@ -107,7 +107,7 @@ func TestFloatConvertion(t *testing.T) {
 	convertedFloat = converter.CastSingleElement("floatElement", stringElementComma)
 	_, ok = convertedFloat.(float64)
 	require.True(t, ok)
-	require.Equal(t, convertedFloat, 5.25)
+	require.Equal(t, convertedFloat, 1024543.22)
 	convertedFloat = converter.CastSingleElement("floatElement", boolElement)
 	_, ok = convertedFloat.(float64)
 	require.True(t, ok)
