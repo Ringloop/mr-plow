@@ -3,6 +3,7 @@ package test
 import (
 	"encoding/json"
 	"log"
+	"sync"
 	"testing"
 
 	"github.com/Ringloop/mr-plow/elastic"
@@ -11,30 +12,31 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-type upsertIntegrationTest struct{}
+type insertTypedIntegrationTest struct{}
 
 // test case config scenario
-func (*upsertIntegrationTest) ReadConfig() ([]byte, error) {
+func (*insertTypedIntegrationTest) ReadConfig() ([]byte, error) {
 
-	testComplexConfig := `
-pollingSeconds: 5
+	return []byte(`
+pollingSeconds: 1
 database: "postgres://user:pwd@localhost:5432/postgres?sslmode=disable"
 queries:
   - query: "select * from test.table1 where last_update > $1"
     index: "out_index"
     updateDate: "last_update"
-    id: "email"
+    fields:
+      - name: email
+        type: String
+      - name: user_id
+        type: Integer
 elastic:
   url: http://localhost:9200
-`
-
-	// Prepare data you want to return without reading from the file
-	return []byte(testComplexConfig), nil
+`), nil
 }
 
-func TestUpsertIntegration(t *testing.T) {
+func TestInsertTypedIntegration(t *testing.T) {
 	//given (some data on sql db)
-	conf := initConfigIntegrationTest(t, &upsertIntegrationTest{})
+	conf := initConfigIntegrationTest(t, &insertTypedIntegrationTest{})
 	db := initSqlDB(t, conf)
 	defer db.Close()
 	repo, err := elastic.NewDefaultClient()
@@ -51,13 +53,24 @@ func TestUpsertIntegration(t *testing.T) {
 		t.FailNow()
 	}
 
-	//when (moving data to elastic)
+	//when (moving data to elastic
+	var allMovesDone sync.WaitGroup
+	allMovesDone.Add(5)
 	mover := movedata.New(db, conf, &conf.Queries[0])
-	err = mover.MoveData()
-	if err != nil {
-		t.Error("error data moving", err)
-		t.FailNow()
+	doMove := func() {
+		defer allMovesDone.Done()
+		errRoutine := mover.MoveData()
+		if errRoutine != nil {
+			t.Error("error data moving", err)
+			t.FailNow()
+		}
 	}
+
+	//(testing also long-running execution by executing the function as separate go routine))
+	for i := 0; i < 5; i++ {
+		go doMove()
+	}
+	allMovesDone.Wait()
 
 	//then (last date on elastic should be updated)
 	lastImportedDate, err := repo.FindLastUpdateOrEpochDate(conf.Queries[0].Index, conf.Queries[0].UpdateDate)
@@ -87,11 +100,10 @@ func TestUpsertIntegration(t *testing.T) {
 		t.FailNow()
 	}
 
-	require.Equal(t, len(response1.Hits.Hits), 1, "Test should extract exactly ONE result from Elastic")
-	require.Equal(t, response1.Hits.Hits[0].Source.Email, "mario@rossi.it", "Email not valid")
-	require.NotNil(t, response1.Hits.Hits[0].Source.LastUpdate, "Last Update should not be NIL")
-	require.NotNil(t, response1.Hits.Hits[0].Source.UserID, "UserID should not be null")
-	require.Equal(t, response1.Hits.Hits[0].ID, "mario@rossi.it")
+	require.Equal(t, len(response1.Hits.Hits), 1)
+	require.Equal(t, response1.Hits.Hits[0].Source.Email, "mario@rossi.it")
+	require.NotNil(t, response1.Hits.Hits[0].Source.LastUpdate)
+	require.NotNil(t, response1.Hits.Hits[0].Source.UserID)
 
 	//and when (inserting new data)
 	insertData(db, "mario@rossi.it", t)
@@ -116,5 +128,5 @@ func TestUpsertIntegration(t *testing.T) {
 		t.FailNow()
 	}
 
-	require.Equal(t, len(response2.Hits.Hits), 1)
+	require.Equal(t, len(response2.Hits.Hits), 2)
 }

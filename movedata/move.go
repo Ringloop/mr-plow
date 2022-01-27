@@ -9,6 +9,7 @@ import (
 	"log"
 	"time"
 
+	"github.com/Ringloop/mr-plow/casting"
 	"github.com/Ringloop/mr-plow/config"
 	"github.com/Ringloop/mr-plow/elastic"
 
@@ -21,17 +22,43 @@ type Mover struct {
 	db           *sql.DB
 	globalConfig *config.ImportConfig
 	queryConf    *config.QueryModel
+	columnsMap   map[string]string
+	jsonColsMap  map[string]map[string]string
 	canExec      chan bool
 }
 
 func New(db *sql.DB, globalConfig *config.ImportConfig, queryConf *config.QueryModel) *Mover {
+	columnsMap, jsonColsMap := getColumnsConfiguration(queryConf)
+
 	mover := &Mover{
 		db:           db,
 		globalConfig: globalConfig,
 		queryConf:    queryConf,
+		columnsMap:   columnsMap,
+		jsonColsMap:  jsonColsMap,
 		canExec:      make(chan bool, 1)}
 	mover.canExec <- true
 	return mover
+}
+
+func getColumnsConfiguration(queryConf *config.QueryModel) (map[string]string, map[string]map[string]string) {
+	//create the map for the native fields of the query
+	columnsMap := make(map[string]string)
+	for _, colConfig := range queryConf.Fields {
+		columnsMap[colConfig.Name] = colConfig.Type
+	}
+
+	//create a nested map for the JSON fields (any JSON contains a set of fields)
+	var jsonColsMap = make(map[string]map[string]string)
+	for _, jsonColConfig := range queryConf.JSONFields {
+		for _, colConfig := range jsonColConfig.Fields {
+			if jsonColsMap[jsonColConfig.FieldName] == nil {
+				jsonColsMap[jsonColConfig.FieldName] = make(map[string]string)
+			}
+			jsonColsMap[jsonColConfig.FieldName][colConfig.Name] = colConfig.Type
+		}
+	}
+	return columnsMap, jsonColsMap
 }
 
 func (mover *Mover) MoveData() error {
@@ -62,7 +89,7 @@ func (mover *Mover) MoveData() error {
 	}
 	defer elasticBulk.Close(context.Background())
 
-	log.Printf("going to execute query %s whit param %s", mover.queryConf.Query, lastDate)
+	log.Printf("going to execute query %s with param %s", mover.queryConf.Query, lastDate)
 	rows, err := mover.db.Query(mover.queryConf.Query, lastDate)
 	if err != nil {
 		return err
@@ -71,30 +98,38 @@ func (mover *Mover) MoveData() error {
 	if err != nil {
 		return err
 	}
+
 	for rows.Next() {
-		columns := make([]interface{}, len(cols))
-		columnPointers := make([]interface{}, len(cols))
+		columns := make([](interface{}), len(cols))
 		for i := range columns {
-			columnPointers[i] = &columns[i]
+			columns[i] = &columns[i]
 		}
 
-		if err := rows.Scan(columnPointers...); err != nil {
+		if err := rows.Scan(columns...); err != nil {
 			return err
 		}
-
+		converter := casting.NewConverter(mover.columnsMap)
+		convertedArrayOfData := converter.CastArrayOfData(cols, columns)
 		document := make(map[string]interface{})
 		for i, colName := range cols {
-			val := columnPointers[i].(*interface{})
-			document[colName] = *val
+			document[colName] = convertedArrayOfData[i]
 		}
-
 		for _, jsonfield := range mover.queryConf.JSONFields {
 			var jsonData map[string]interface{}
-			byteData := document[jsonfield.FieldName].([]byte)
-			//TODO consider also the field types in parsing
+
+			data, ok := document[jsonfield.FieldName]
+			if !ok {
+				return fmt.Errorf("error getting ....: %s", err)
+			}
+			byteData := data.([]byte)
+
 			err := json.Unmarshal(byteData, &jsonData)
 			if err != nil {
 				return err
+			}
+			for _, field := range jsonfield.Fields {
+				jsonConverter := casting.NewConverter(mover.jsonColsMap[jsonfield.FieldName])
+				jsonData[field.Name] = jsonConverter.CastSingleElement(field.Name, jsonData[field.Name])
 			}
 			document[jsonfield.FieldName] = jsonData
 		}
@@ -127,7 +162,6 @@ func (mover *Mover) MoveData() error {
 		}
 	}
 	return nil
-
 }
 
 func (mover *Mover) getLastDate(repo *elastic.Repository) (*time.Time, error) {
@@ -146,7 +180,7 @@ func (mover *Mover) getLastDate(repo *elastic.Repository) (*time.Time, error) {
 func (mover *Mover) updateLastUpdate(conf *config.QueryModel, document map[string]interface{}) error {
 	date, ok := document[conf.UpdateDate]
 	if !ok {
-		return fmt.Errorf("cannot found %s in results set of %s", conf.UpdateDate, conf.Query)
+		return fmt.Errorf("cannot find %s in results set of %s", conf.UpdateDate, conf.Query)
 	}
 	dateParsed, ok := date.(time.Time)
 	if !ok {
