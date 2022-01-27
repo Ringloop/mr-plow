@@ -1,10 +1,10 @@
 package test
 
 import (
-	"github.com/Ringloop/mr-plow/test_util"
 	"testing"
 
 	"github.com/Ringloop/mr-plow/config"
+	"github.com/stretchr/testify/require"
 )
 
 type invalidConf1 struct{}
@@ -130,22 +130,22 @@ elastic:
 
 func TestInvalidConfig(t *testing.T) {
 	_, err := config.ParseConfiguration(&invalidConf1{})
-	test_util.AssertEqual(t, err.Error(), "missing polling seconds url (pollingSeconds)")
+	require.Equal(t, err.Error(), "missing polling seconds url (pollingSeconds)")
 
 	_, err = config.ParseConfiguration(&invalidConf2{})
-	test_util.AssertEqual(t, err.Error(), "missing database url (database)")
+	require.Equal(t, err.Error(), "missing database url (database)")
 
 	_, err = config.ParseConfiguration(&invalidConf3{})
-	test_util.AssertEqual(t, err.Error(), "missing query configuration (queries)")
+	require.Equal(t, err.Error(), "missing query configuration (queries)")
 
 	_, err = config.ParseConfiguration(&invalidConf4{})
-	test_util.AssertEqual(t, err.Error(), "missing elastic url (elastic.url)")
+	require.Equal(t, err.Error(), "missing elastic url (elastic.url)")
 
 	_, err = config.ParseConfiguration(&invalidConf5{})
-	test_util.AssertNotNull(t, err)
+	require.NotNil(t, err)
 	_, err = config.ParseConfiguration(&invalidConf6{})
-	test_util.AssertNotNull(t, err)
+	require.NotNil(t, err)
 	_, err = config.ParseConfiguration(&invalidConf7{})
-	test_util.AssertNotNull(t, err)
+	require.NotNil(t, err)
 
 }
