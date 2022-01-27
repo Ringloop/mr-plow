@@ -78,8 +78,7 @@ queries:
 ```
 Merging the previous two examples, we can apply the type casting also to inner JSON fields, here is a complete example of configuration:
 
-```
-yaml
+```yaml
 pollingSeconds: 5
 database: databaseValue
 queries:
