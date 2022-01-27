@@ -39,23 +39,8 @@ elastic:
   caCertPath: "my/path/ca" #optional, path of custom CA file (it may be needed in some HTTPS connection..)
 ```
 
-There are some additional features Mr Plow can manage, such as specifying the expected data type to be inserted in ElasticSearch JSON (not specified fields are parsed as String):
+Anyway, Mr Plow has also additional features, for example interacting with a database like Postgres, supporting JSON columns, we can specify JSON fields, in order to create a complex (nested) object to be created in Elastic. In the following, we show an example where in the Employee table we store two dynamic JSON fields, one containing the Payment Data and another one containing additional informations for the employee:
 
-```yaml
-pollingSeconds: 5
-database: databaseValue
-queries:
-  - index: index_1
-    query: select * from employees
-    updateDate: last_update
-    fields:
-      - name: name
-        type: String
-      - name: working_hours
-        type: Integer
-```
-
-And additionally (for database like Postgres) you can also specify JSON columns fields:
 ```yaml
 pollingSeconds: 5
 database: databaseValue
@@ -69,17 +54,52 @@ queries:
       - name: working_hours
         type: Integer
     JSONFields:
-      - fieldName: dataField_1
-        fields:
-          - name: attribute_1_Name
-            type: attribute_1_Type
-      - fieldName: dataField_2
-        fields:
-          - name: attribute_2_Name
-            type: attribute_2_Type
+      - fieldName: payment_data
+      - fieldName: additional_infos
     id: MyId_1
 ```
 
+And additionally, we can specify the type expected for some specific fields. Please note hat field type is optional and if not specified, the field is casted as String.
+
+Actually supported type are: String, Integer, Float and Boolean
+
+```yaml
+pollingSeconds: 5
+database: databaseValue
+queries:
+  - index: index_1
+    query: select * from employees
+    updateDate: last_update
+    fields:
+      - name: name
+        type: String
+      - name: working_hours
+        type: Integer
+```
+Merging the previous two examples, we can apply the type casting also to inner JSON fields, here is a complete example of configuration:
+
+```
+yaml
+pollingSeconds: 5
+database: databaseValue
+queries:
+  - index: index_1
+    query: select * from employees
+    updateDate: last_update
+    fields:
+      - name: name
+        type: String
+      - name: working_hours
+        type: Integer
+    JSONFields:
+      - fieldName: payment_info
+        fields:
+          - name: bank_account
+            type: String
+          - name: validated
+            type: Boolean
+    id: MyId_1
+```
 
 Download or build the binary (docker images will be released soon):
 ```bash
