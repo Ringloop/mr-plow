@@ -48,11 +48,6 @@ queries:
   - index: index_1
     query: select * from employees
     updateDate: last_update
-    fields:
-      - name: name
-        type: String
-      - name: working_hours
-        type: Integer
     JSONFields:
       - fieldName: payment_data
       - fieldName: additional_infos
@@ -70,7 +65,7 @@ queries:
   - index: index_1
     query: select * from employees
     updateDate: last_update
-    fields:
+    fields: # Optional config, casting standard sql columns to specific data type
       - name: name
         type: String
       - name: working_hours
@@ -85,7 +80,7 @@ queries:
   - index: index_1
     query: select * from employees
     updateDate: last_update
-    fields:
+    fields: # Optional config, casting standard sql columns to specific data type
       - name: name
         type: String
       - name: working_hours
