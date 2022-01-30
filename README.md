@@ -80,14 +80,14 @@ queries:
   - index: index_1
     query: select * from employees
     updateDate: last_update
-    fields: # Optional config, casting standard sql columns to specific data type
+    fields: # Optional, casting standard sql columns to specific data type
       - name: name
         type: String
       - name: working_hours
         type: Integer
     JSONFields:
       - fieldName: payment_info
-        fields:
+        fields: # Optional, casting json fields to specific data type
           - name: bank_account
             type: String
           - name: validated
