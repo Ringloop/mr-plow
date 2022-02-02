@@ -15,10 +15,10 @@ During the startup Mr-Plow checks the data inserted into elasticsearch to check 
 ![image](https://user-images.githubusercontent.com/7256185/141697554-4e6f86d8-06e4-4c22-aea5-30145e40fc41.png )
 
 ### Usage:
-Mr-Plow can execute many queries in parallel.
-Specify a timestamp/date column in the queries in order to get only newly updated/inserted data.
+Mr-Plow essentially executes queries on a relational database and writes these data to ElasticSearch.
+The configured queries are run in parallel, and data are written incrementally, it's only sufficient to specify a timestamp/date column in the queries in order to get only newly updated/inserted data.
 
-Configuration template example:
+This is a basic configuration template example, where we only specify two queries and the endpoint configuration (one Postgres database and one ElasticSearch cluster:
 ```yaml
 # example of config.yml
 pollingSeconds: 5 #database polling interval
@@ -37,6 +37,62 @@ elastic:
   password: "my_secret" #optional
   numWorker: 10 #optional, number of worker for indexing each query
   caCertPath: "my/path/ca" #optional, path of custom CA file (it may be needed in some HTTPS connection..)
+```
+
+Anyway, Mr Plow has also additional features, for example interacting with a database like Postgres, supporting JSON columns, we can specify JSON fields, in order to create a complex (nested) object to be created in Elastic. In the following, we show an example where in the Employee table we store two dynamic JSON fields, one containing the Payment Data and another one containing additional informations for the employee:
+
+```yaml
+pollingSeconds: 5
+database: databaseValue
+queries:
+  - index: index_1
+    query: select * from employees
+    updateDate: last_update
+    JSONFields:
+      - fieldName: payment_data
+      - fieldName: additional_infos
+    id: MyId_1
+```
+
+And additionally, we can specify the type expected for some specific fields. Please note hat field type is optional and if not specified, the field is casted as String.
+
+Actually supported type are: String, Integer, Float and Boolean
+
+```yaml
+pollingSeconds: 5
+database: databaseValue
+queries:
+  - index: index_1
+    query: select * from employees
+    updateDate: last_update
+    fields: # Optional config, casting standard sql columns to specific data type
+      - name: name
+        type: String
+      - name: working_hours
+        type: Integer
+```
+Merging the previous two examples, we can apply the type casting also to inner JSON fields, here is a complete example of configuration:
+
+```yaml
+pollingSeconds: 5
+database: databaseValue
+queries:
+  - index: index_1
+    query: select * from employees
+    updateDate: last_update
+    fields: # Optional, casting standard sql columns to specific data type
+      - name: name
+        type: String
+      - name: working_hours
+        type: Integer
+    JSONFields:
+      - fieldName: payment_info
+        fields: # Optional, casting json fields to specific data type
+          - name: bank_account
+            type: String
+          - name: validated
+            type: Boolean
+    id: MyId_1
 ```
 
 Download or build the binary (docker images will be released soon):

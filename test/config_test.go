@@ -2,10 +2,8 @@ package test
 
 import (
 	"testing"
-
-	"github.com/stretchr/testify/require"
-
 	"github.com/Ringloop/mr-plow/config"
+	"github.com/stretchr/testify/require"
 )
 
 type readerComplexTest struct{}
