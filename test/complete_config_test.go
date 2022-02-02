@@ -2,6 +2,7 @@ package test
 
 import (
 	"testing"
+
 	"github.com/Ringloop/mr-plow/config"
 	"github.com/stretchr/testify/require"
 )
@@ -63,20 +64,12 @@ func TestGetCompleteConfig(t *testing.T) {
 	require.Equal(t, configVal.Database, "databaseValue")
 	queries := configVal.Queries
 	require.Equal(t, len(queries), 2)
-
 	//test queries[0]
 	require.Equal(t, queries[0].Index, "index_1")
 	require.Equal(t, queries[0].Query, "select * from table_1")
 	jsonFields1 := queries[0].JSONFields
 	require.Equal(t, len(jsonFields1), 2)
 	require.Equal(t, jsonFields1[0].FieldName, "dataField_1")
-	attribute1JsonFields1 := jsonFields1[0].Attributes
-	require.Equal(t, attribute1JsonFields1.AttributeName, "attribute_1_Name")
-	require.Equal(t, attribute1JsonFields1.AttributeType, "attribute_1_Type")
-	require.Equal(t, jsonFields1[1].FieldName, "dataField_2")
-	attribute1JsonFields2 := jsonFields1[1].Attributes
-	require.Equal(t, attribute1JsonFields2.AttributeName, "attribute_2_Name")
-	require.Equal(t, attribute1JsonFields2.AttributeType, "attribute_2_Type")
 	require.Equal(t, queries[0].UpdateDate, "test01")
 	require.Equal(t, queries[0].Id, "MyId_1")
 	queryFields := queries[0].Fields
@@ -85,7 +78,7 @@ func TestGetCompleteConfig(t *testing.T) {
 	require.Equal(t, queryFields[1].Name, "last_update")
 	require.Equal(t, queryFields[1].Type, "Date")
 
-	jsonFields1 := queries[0].JSONFields
+	jsonFields1 = queries[0].JSONFields
 	require.Equal(t, len(jsonFields1), 2)
 	require.Equal(t, jsonFields1[0].FieldName, "dataField_1")
 	attribute1JsonFields1 := jsonFields1[0]
