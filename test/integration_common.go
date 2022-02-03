@@ -2,8 +2,9 @@ package test
 
 import (
 	"database/sql"
-	"github.com/Ringloop/mr-plow/config"
 	"testing"
+
+	"github.com/Ringloop/mr-plow/pkg/config"
 )
 
 func initConfigIntegrationTest(t *testing.T, testReader config.IReader) *config.ImportConfig {

@@ -3,8 +3,8 @@ package test
 import (
 	"testing"
 
-	"github.com/Ringloop/mr-plow/casting"
-	"github.com/stretchr/testify/require"
+	"github.com/Ringloop/mr-plow/pkg/casting"
+	"github.com/stretchr/testify/pkg/require"
 )
 
 //func CastSingleElement(inputTypeMap map[string]string, inputName string, inputData interface{}) interface{} {
