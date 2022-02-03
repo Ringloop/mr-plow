@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	"github.com/Ringloop/mr-plow/pkg/casting"
-	"github.com/stretchr/testify/pkg/require"
+	"github.com/stretchr/testify/require"
 )
 
 //func CastSingleElement(inputTypeMap map[string]string, inputName string, inputData interface{}) interface{} {
