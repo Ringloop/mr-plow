@@ -97,12 +97,12 @@ queries:
 
 Download or build the binary (docker images will be released soon):
 ```bash
-go build
+make 
 ```
 
 Run the tool:
 ```bash
-./mr-plow -config /path/to/my/config.yml
+./bin/mr-plow -config /path/to/my/config.yml
 ```
 
 To build as docker image, create a `config.yml` and put into the root folder of the project. Then run:
