@@ -1,9 +1,9 @@
-package test
+package config
 
 import (
 	"testing"
 
-	"github.com/Ringloop/mr-plow/config"
+	"github.com/Ringloop/mr-plow/pkg/config"
 	"github.com/stretchr/testify/require"
 )
 

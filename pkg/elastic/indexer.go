@@ -10,7 +10,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/Ringloop/mr-plow/config"
+	"github.com/Ringloop/mr-plow/pkg/config"
 
 	"github.com/elastic/go-elasticsearch/v7"
 	"github.com/elastic/go-elasticsearch/v7/esapi"
