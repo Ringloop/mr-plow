@@ -2,7 +2,6 @@ package config
 
 import (
 	"io/ioutil"
-	"log"
 )
 
 // Defining an interface so that functionality of 'readConfig()' can be mocked
@@ -18,9 +17,5 @@ type Reader struct {
 // Function to read from actual file
 func (r *Reader) ReadConfig() ([]byte, error) {
 	configFile, err := ioutil.ReadFile(r.FileName)
-
-	if err != nil {
-		log.Fatal(err)
-	}
 	return configFile, err
 }

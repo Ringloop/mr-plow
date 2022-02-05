@@ -3,7 +3,7 @@ package test
 import (
 	"testing"
 
-	"github.com/Ringloop/mr-plow/config"
+	"github.com/Ringloop/mr-plow/internal/config"
 	"github.com/stretchr/testify/require"
 )
 

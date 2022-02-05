@@ -2,13 +2,14 @@ package scheduler
 
 import (
 	"database/sql"
-	"github.com/Ringloop/mr-plow/config"
-	"github.com/Ringloop/mr-plow/movedata"
 	"log"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
+
+	"github.com/Ringloop/mr-plow/internal/config"
+	"github.com/Ringloop/mr-plow/internal/movedata"
 )
 
 type Scheduler struct {

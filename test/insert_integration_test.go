@@ -6,8 +6,8 @@ import (
 	"sync"
 	"testing"
 
-	"github.com/Ringloop/mr-plow/elastic"
-	"github.com/Ringloop/mr-plow/movedata"
+	"github.com/Ringloop/mr-plow/internal/elastic"
+	"github.com/Ringloop/mr-plow/internal/movedata"
 	_ "github.com/lib/pq"
 	"github.com/stretchr/testify/require"
 )
