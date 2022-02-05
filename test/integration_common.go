@@ -4,7 +4,7 @@ import (
 	"database/sql"
 	"testing"
 
-	"github.com/Ringloop/mr-plow/pkg/config"
+	"github.com/Ringloop/mr-plow/internals/config"
 )
 
 func initConfigIntegrationTest(t *testing.T, testReader config.IReader) *config.ImportConfig {

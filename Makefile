@@ -4,5 +4,5 @@ build:
 test:
 	go test ./...
 clean:
-	@echo "Cleaning the mrflow"
+	@echo "Cleaning the mr-plow"
 	@rm -fr bin/mrplow

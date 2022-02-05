@@ -5,10 +5,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Ringloop/mr-plow/pkg/scheduler"
+	"github.com/Ringloop/mr-plow/internals/scheduler"
 	"github.com/stretchr/testify/require"
 
-	"github.com/Ringloop/mr-plow/pkg/elastic"
+	"github.com/Ringloop/mr-plow/internals/elastic"
 	_ "github.com/lib/pq"
 )
 
