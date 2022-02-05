@@ -1,7 +1,0 @@
-database: "postgres://mydb"
-queries: 
-  - query: "select * from table1"
-    index: "index1"
-
-  - query: "select * from table2"
-    index: "index2"
