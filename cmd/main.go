@@ -5,9 +5,9 @@ import (
 	"flag"
 	"log"
 
-	"github.com/Ringloop/mr-plow/internals/scheduler"
+	"github.com/Ringloop/mr-plow/internal/scheduler"
 
-	"github.com/Ringloop/mr-plow/internals/config"
+	"github.com/Ringloop/mr-plow/internal/config"
 	_ "github.com/go-sql-driver/mysql"
 	_ "github.com/lib/pq"
 )

@@ -6,9 +6,9 @@ import (
 	"log"
 	"testing"
 
-	"github.com/Ringloop/mr-plow/internals/config"
-	"github.com/Ringloop/mr-plow/internals/elastic"
-	"github.com/Ringloop/mr-plow/internals/movedata"
+	"github.com/Ringloop/mr-plow/internal/config"
+	"github.com/Ringloop/mr-plow/internal/elastic"
+	"github.com/Ringloop/mr-plow/internal/movedata"
 	_ "github.com/lib/pq"
 )
 

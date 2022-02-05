@@ -3,7 +3,7 @@ package test
 import (
 	"testing"
 
-	"github.com/Ringloop/mr-plow/internals/casting"
+	"github.com/Ringloop/mr-plow/internal/casting"
 	"github.com/stretchr/testify/require"
 )
 
