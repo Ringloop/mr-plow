@@ -1,0 +1,25 @@
+{
+	"name": "mr-plow",
+	"dockerComposeFile": ["docker-compose-mrplow.yml"],
+	"service": "mrplow",
+	"workspaceFolder": "/workspaces/mr-plow",
+	"shutdownAction": "stopCompose",
+	
+	// Set *default* container specific settings.json values on container create.
+	"settings": {
+		"terminal.integrated.profiles.linux": {
+			"bash (login)": {
+			  "path": "/bin/bash"
+			}
+		}
+	},
+
+	// Add the IDs of extensions you want installed when the container is created.
+	"extensions": [
+		"golang.go",
+		"ms-azuretools.vscode-docker",
+		"eamodio.gitlens"
+	],
+
+	"remoteUser": "vscode"
+}
