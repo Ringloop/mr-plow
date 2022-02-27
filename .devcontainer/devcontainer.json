@@ -1,25 +1,32 @@
-{
-	"name": "mr-plow",
-	"dockerComposeFile": ["docker-compose-mrplow.yml"],
-	"service": "mrplow",
-	"workspaceFolder": "/workspaces/mr-plow",
-	"shutdownAction": "stopCompose",
-	
-	// Set *default* container specific settings.json values on container create.
+ {
+ 	"name": "mr-plow",
+ 	"dockerFile": "./dockerfiles/mrplow/Dockerfile",
+
+	"initializeCommand": "/bin/bash ${localWorkspaceFolder}/.devcontainer/gethnfo.sh ${localWorkspaceFolder}",
+
+	"build": {	"args": {
+		"USERNAME": "${localEnv:USER}",
+	}},
+
+ 	"runArgs": [ "--cap-add=SYS_PTRACE", "--security-opt", "seccomp=unconfined"],
 	"settings": {
 		"terminal.integrated.profiles.linux": {
 			"bash (login)": {
-			  "path": "/bin/bash"
+			"path": "/bin/bash"
 			}
 		}
 	},
 
-	// Add the IDs of extensions you want installed when the container is created.
-	"extensions": [
+ 	// Add the IDs of extensions you want installed when the container is created.
+ 	"extensions": [
 		"golang.go",
 		"ms-azuretools.vscode-docker",
 		"eamodio.gitlens"
-	],
+ 	],
 
-	"remoteUser": "vscode"
-}
+ 	"remoteUser": "${localEnv:USER}",
+ 	"mounts": [
+ 		"source=${localEnv:HOME}/.ssh,target=/home/${localEnv:USER}/.ssh,type=bind,consistency=cached",
+		"source=/var/run/docker.sock,target=/var/run/docker.sock,type=bind"
+ 	]
+ }

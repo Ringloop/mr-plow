@@ -1,3 +1,5 @@
 .idea
 mr-plow
 config.yml
+.devcontainer/dockerfiles/mrplow/hnfo
+bin/mrplow

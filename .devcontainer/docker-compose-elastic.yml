@@ -1,0 +1,26 @@
+version: '3.4'
+
+services:
+  elasticsearch:
+    build:
+      context: ./docker_compose/elasticsearch
+      dockerfile: Dockerfile
+    
+    networks:
+      mr-plow_devcontainer_vsmrplow:
+        ipv4_address: 172.25.0.202
+      
+    volumes:
+      - //var/run/docker.sock:/var/run/docker.sock
+      - ~/.ssh:/home/vscode/.ssh:cached
+      - ..:/workspaces/mr-plow:cached
+
+    cap_add:
+      - SYS_PTRACE
+    security_opt:
+      - seccomp:unconfined
+
+networks:
+  mr-plow_devcontainer_vsmrplow:
+    external: true
+    
