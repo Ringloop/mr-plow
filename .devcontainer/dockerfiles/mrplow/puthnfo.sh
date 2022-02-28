@@ -1,4 +1,5 @@
 #!/bin/bash
+
 USER_UID=$(awk 'NR==1' /hnfo)
 USER_GID=$(awk 'NR==2' /hnfo)
 DKR_GID=$(awk 'NR==3' /hnfo)
