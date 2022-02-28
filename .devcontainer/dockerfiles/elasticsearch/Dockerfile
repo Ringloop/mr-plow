@@ -1,1 +1,1 @@
-FROM elasticsearch:lastest
+FROM elasticsearch:7.16.3
