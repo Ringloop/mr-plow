@@ -2,21 +2,36 @@ version: '3.4'
 
 services:
   elasticsearch:
-    build:
-      context: ./dockerfiles/elasticsearch
-      dockerfile: Dockerfile
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.15.1
+    
+    environment:
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - xpack.security.enabled=false
+      - "discovery.type=single-node"
+    
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    
+    volumes:
+      - es-data:/usr/share/elasticsearch/data
+    
+    ports:
+      - 9200:9200
     
     networks:
       mr-plow:
         ipv4_address: 10.70.67.102
-      
-    volumes:
-      - ..:/workspaces/mr-plow:cached
-
+    
     cap_add:
       - SYS_PTRACE
     security_opt:
       - seccomp:unconfined
+
+volumes:
+  es-data:
+    driver: local
 
 networks:
   mr-plow:

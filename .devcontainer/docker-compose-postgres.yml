@@ -1,0 +1,21 @@
+version: '3.4'
+
+services:
+  postgres:
+    image: postgres:14.2
+
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: pwd
+
+    ports:
+      - "5432:5432"
+    
+    networks:
+      mr-plow:
+        ipv4_address: 10.70.67.104
+
+networks:
+  mr-plow:
+    external: true
+    

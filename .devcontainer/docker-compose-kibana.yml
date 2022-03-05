@@ -1,0 +1,21 @@
+version: '3.4'
+
+services:
+  kibana:
+    image: docker.elastic.co/kibana/kibana:7.15.1
+
+    environment:
+      ELASTICSEARCH_URL: http://10.70.67.102:9200
+      ELASTICSEARCH_HOSTS: '["http://10.70.67.102:9200"]'
+    
+    ports:
+      - 5601:5601
+    
+    networks:
+      mr-plow:
+        ipv4_address: 10.70.67.103
+
+networks:
+  mr-plow:
+    external: true
+    
