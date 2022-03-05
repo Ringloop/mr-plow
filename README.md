@@ -110,4 +110,31 @@ To build as docker image, create a `config.yml` and put into the root folder of 
 docker build .
 ```
 
+### Mr-Plow development with Visual Studio Code
+
+**Requirements**
+
+- [Docker](https://docs.docker.com/)
+- [Visual Studio Code](https://code.visualstudio.com/)
+
+**Steps**
+
+1. Clone project to a local folder
+2. VSCode -> `><` (left bottom button) -> Open Folder in Container...
+
+**Instructions**
+
+You can develop and test Mr-Plow inside a docker container without being forced to install or configure anything on your own machine.  
+Visual Studio Code can take care of automatically download and build this docker's image.  
+An especial care has been devoted to make sure your host's linux user will match its `UID` and `GID` with the user inside the container.  
+This ensures that every modification you are doing from inside the container will be completely transparent from the host's perspective.  
+Moreover, your host's user `~.ssh` directory is being mounted on the container's user `~.ssh` directory, this is especially convenient if you are using an ssh authentication with GitHub.  
+From inside the container you are able to access the host's docker engine as if you were just in a regular host's shell.  
+This capability allows you to launch the predefined `docker-compose` images directly from Visual Studio Code.  
+Simply access to the task menu pressing: `ctrl + shift + p` and select `Docker: Compose Up`.  
+You can therefore choose to spawn up the following services:
+
+- `docker-compose-elastic.yml`: ElasticSearch
+- `docker-compose-kibana.yml`: Kibana
+- `docker-compose-kibana.yml`: Postgres
 
