@@ -2,8 +2,10 @@
  	"name": "mr-plow",
  	"dockerFile": "./dockerfiles/mrplow/Dockerfile",
 
+	/*
+		On MS Windows you should comment both "initializeCommand" and "build" directives.
+	*/
 	"initializeCommand": "/bin/bash ${localWorkspaceFolder}/.devcontainer/icstart.sh ${localWorkspaceFolder}",
-
 	"build": {	"args": {
 		"USERNAME": "${localEnv:USER}",
 	}},
@@ -23,7 +25,11 @@
 		"ms-azuretools.vscode-docker",
  	],
 
+	/*
+		On MS Windows you should set "remoteUser": "vscode"
+	*/
  	"remoteUser": "${localEnv:USER}",
+
  	"mounts": [
  		"source=${localEnv:HOME}/.ssh,target=/home/${localEnv:USER}/.ssh,type=bind,consistency=cached",
 		"source=/var/run/docker.sock,target=/var/run/docker.sock,type=bind"

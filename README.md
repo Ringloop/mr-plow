@@ -117,24 +117,32 @@ docker build .
 - [Docker](https://docs.docker.com/)
 - [Visual Studio Code](https://code.visualstudio.com/)
 
+Linux and Mac users should ensure to have the following programs installed on their system:  
+
+- `bash`, `id`, `getent`
+
+Windows users must be aware that they should clone Mr-Plow repository over the `WSL` filesystem.  
+This is the recommended way because mounting a `NTFS` filesystem inside a container exposes the overall user's experience to major issues.  
+Windows users should also patch the `.devcontainer/devcontainer.json` as indicated in the comments inside the file.  
+
 **Steps**
 
-1. Clone project to a local folder
+1. Clone the project to a local folder
 2. VSCode -> `><` (left bottom button) -> Open Folder in Container...
 
 **Instructions**
 
-You can develop and test Mr-Plow inside a docker container without being forced to install or configure anything on your own machine.  
-Visual Studio Code can take care of automatically download and build this docker's image.  
-An especial care has been devoted to make sure your host's linux user will match its `UID` and `GID` with the user inside the container.  
-This ensures that every modification you are doing from inside the container will be completely transparent from the host's perspective.  
-Moreover, your host's user `~.ssh` directory is being mounted on the container's user `~.ssh` directory, this is especially convenient if you are using an ssh authentication with GitHub.  
-From inside the container you are able to access the host's docker engine as if you were just in a regular host's shell.  
-This capability allows you to launch the predefined `docker-compose` images directly from Visual Studio Code.  
-Simply access to the task menu pressing: `ctrl + shift + p` and select `Docker: Compose Up`.  
-You can therefore choose to spawn up the following services:
+Users can develop and test Mr-Plow inside a docker container without being forced to install or configure anything on your own machine.  
+Visual Studio Code can take care of automatically download and build the developer's docker image.  
+For Linux and Mac users, an especial care has been devoted to make sure the host's user will match `UID` and `GID` with the user inside the container.  
+This ensures that every modification from inside the container will be completely transparent from the host's perspective.  
+Moreover, host's user `~.ssh` directory will be mounted on the container's user `~.ssh` directory. This is especially convenient if an ssh authentication type is configured to work with GitHub.  
+From inside the container, users will be able to access the host's docker engine as if they were just in a regular host's shell.  
+This capability allows users to launch the predefined `docker-compose` images directly from Visual Studio Code.  
+Users can simply access to the task menu pressing: `ctrl + shift + p` and select `Docker: Compose Up`.  
+Therefore, they can choose to spawn up the following services:
 
 - `docker-compose-elastic.yml`: ElasticSearch
 - `docker-compose-kibana.yml`: Kibana
-- `docker-compose-kibana.yml`: Postgres
+- `docker-compose-postgres.yml`: Postgres
 
