@@ -21,7 +21,7 @@ services:
       - 9200:9200
     
     networks:
-      mr-plow:
+      vscode-mr-plow:
         ipv4_address: 10.70.67.102
     
     cap_add:
@@ -34,6 +34,6 @@ volumes:
     driver: local
 
 networks:
-  mr-plow:
+  vscode-mr-plow:
     external: true
     
