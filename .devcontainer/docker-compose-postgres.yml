@@ -12,10 +12,10 @@ services:
       - "5432:5432"
     
     networks:
-      mr-plow:
+      vscode-mr-plow:
         ipv4_address: 10.70.67.104
 
 networks:
-  mr-plow:
+  vscode-mr-plow:
     external: true
     
