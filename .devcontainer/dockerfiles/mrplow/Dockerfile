@@ -8,6 +8,7 @@ ENV DEBIAN_FRONTEND=noninteractive
 
 # Configure apt and install packages
 RUN apt-get update \
+    && apt-get upgrade -y \
     && apt-get -y install sudo build-essential bash-completion docker-compose \
     && apt-get autoremove -y
 
