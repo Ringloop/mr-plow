@@ -29,15 +29,16 @@ func (s *Scheduler) MoveDataUntilExit(conf *config.ImportConfig, db *sql.DB, que
 	mover := movedata.New(db, conf, query)
 	for {
 		select {
-		case <-ticker.C:
-			moveErr := mover.MoveData()
-			if moveErr != nil {
-				log.Printf("error executing query %s", moveErr)
-			}
 		case <-s.Done:
 			log.Println("stopping query execution, bye...")
 			finished <- true
 			return
+		default:
+			<-ticker.C
+			moveErr := mover.MoveData()
+			if moveErr != nil {
+				log.Printf("error executing query %s", moveErr)
+			}
 		}
 	}
 }
